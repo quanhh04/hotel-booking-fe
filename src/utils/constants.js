@@ -33,6 +33,13 @@ export const API_PATHS = {
   NOTIFICATIONS: `${P}/notifications`,
   NOTIFICATION_READ: (id) => `${P}/notifications/${id}/read`,
   NOTIFICATIONS_READ_ALL: `${P}/notifications/read-all`,
+
+  // AI
+  AI_CHAT: `${P}/ai/chat`,
+  AI_RECOMMENDATIONS: `${P}/ai/recommendations`,
+  AI_TRENDING: `${P}/ai/trending`,
+  AI_HISTORY_BASED: `${P}/ai/history-based`,
+  AI_TRACK_CLICK: `${P}/ai/track/click`,
 };
 
 export const BOOKING_STATUS_LABELS = {

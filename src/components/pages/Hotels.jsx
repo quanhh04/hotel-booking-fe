@@ -9,6 +9,8 @@ import FiltersSidebar from "../shared/FiltersSidebar";
 import HotelCard from "../shared/HotelCard";
 import SortBar from "../shared/SortBar";
 import { useHotels } from "../../hooks/useHotels";
+import { useAiRecommendations } from "../../hooks/useAiRecommendations";
+import AiRoomCard from "../shared/AiRoomCard";
 
 const SORT_MAP = {
   popular: {},
@@ -54,6 +56,15 @@ export default function Hotels() {
   }, [filters.city, filters.minPrice, filters.maxPrice, filters.stars, sort]);
 
   const { hotels, total, loading, error, refetch } = useHotels(apiParams);
+
+  // AI recommendations based on current filters
+  const aiParams = useMemo(() => {
+    const p = { limit: 4 };
+    if (filters.maxPrice) p.max_price = Number(filters.maxPrice);
+    if (filters.amenities?.length) p.amenities = filters.amenities.join(",");
+    return p;
+  }, [filters.maxPrice, filters.amenities]);
+  const { rooms: aiRooms, loading: aiLoading } = useAiRecommendations(aiParams);
 
   // Sidebar options (hardcoded since we no longer have mock data to derive from)
   const options = useMemo(() => ({
@@ -137,6 +148,25 @@ export default function Hotels() {
                 <Card className="p-6 text-center text-slate-600">
                   Không có kết quả phù hợp. Thử đổi bộ lọc nhé.
                 </Card>
+              )}
+            </div>
+          )}
+
+          {/* AI Recommendations */}
+          {!loading && aiRooms.length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-semibold text-slate-900">✨ AI gợi ý cho bạn</span>
+                <span className="text-xs text-slate-500">Dựa trên bộ lọc hiện tại</span>
+              </div>
+              {aiLoading ? (
+                <Spinner text="Đang tải gợi ý..." />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {aiRooms.map((r) => (
+                    <AiRoomCard key={r.room_id} room={r} />
+                  ))}
+                </div>
               )}
             </div>
           )}

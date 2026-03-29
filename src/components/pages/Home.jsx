@@ -8,8 +8,10 @@ import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
 import { useAuth } from "../../contexts/AuthContext";
 import { useHotels } from "../../hooks/useHotels";
+import { useAiTrending, useAiHistoryBased } from "../../hooks/useAiRecommendations";
 import { cityApi } from "../../api/cityApi";
 import { formatVND } from "../../utils/format";
+import AiRoomCard from "../shared/AiRoomCard";
 
 function toYYYYMMDD(d) {
   const pad = (n) => String(n).padStart(2, "0");
@@ -38,6 +40,12 @@ export default function Home() {
   // Fetch top-rated hotels
   const topFilters = useMemo(() => ({ sort_by: "rating", sort_order: "DESC", limit: 4 }), []);
   const { hotels: topHotels, loading: topLoading, error: topError, refetch: refetchTop } = useHotels(topFilters);
+
+  // AI: trending rooms
+  const { rooms: trendingRooms, loading: trendingLoading } = useAiTrending(7);
+
+  // AI: history-based (only for logged-in users)
+  const { recommendations: historyRooms, loading: historyLoading, message: historyMsg } = useAiHistoryBased(!!user);
 
 
   // Fetch destinations from API  // Fetch destinations from API
@@ -286,6 +294,48 @@ export default function Home() {
           </div>
         </Container>
       </section>
+
+      {/* AI: TRENDING ROOMS */}
+      {trendingRooms.length > 0 && (
+        <section className="bg-white">
+          <Container className="py-10">
+            <h2 className="text-xl font-extrabold text-slate-900">🔥 Phòng đang hot</h2>
+            <p className="text-sm text-slate-600 mt-1">Được đặt nhiều nhất trong 7 ngày qua</p>
+            {trendingLoading ? (
+              <Spinner text="Đang tải..." />
+            ) : (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {trendingRooms.slice(0, 4).map((r) => (
+                  <AiRoomCard key={r.room_id} room={r} />
+                ))}
+              </div>
+            )}
+          </Container>
+        </section>
+      )}
+
+      {/* AI: HISTORY-BASED RECOMMENDATIONS */}
+      {user && (
+        <section className="bg-slate-50">
+          <Container className="py-10">
+            <h2 className="text-xl font-extrabold text-slate-900">✨ Gợi ý cho bạn</h2>
+            <p className="text-sm text-slate-600 mt-1">Dựa trên lịch sử đặt phòng của bạn</p>
+            {historyLoading ? (
+              <Spinner text="Đang phân tích..." />
+            ) : historyRooms?.length > 0 ? (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {historyRooms.slice(0, 4).map((r) => (
+                  <AiRoomCard key={r.room_id} room={r} reason={r.reason} />
+                ))}
+              </div>
+            ) : (
+              <Card className="p-4 mt-4 text-sm text-slate-600">
+                {historyMsg || "Hãy đặt phòng để nhận gợi ý phù hợp với sở thích của bạn."}
+              </Card>
+            )}
+          </Container>
+        </section>
+      )}
 
       {/* NEWSLETTER */}
       <section className="bg-[#003580] text-white">

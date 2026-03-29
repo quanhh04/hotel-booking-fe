@@ -8,6 +8,7 @@ import ErrorCard from "../ui/ErrorCard";
 import { useAuth } from "../../contexts/AuthContext";
 import { useHotelDetail } from "../../hooks/useHotelDetail";
 import { formatVND } from "../../utils/format";
+import { aiApi } from "../../api/aiApi";
 import ReviewsSection from "../shared/ReviewsSection";
 
 function getLabelByRating(rating) {
@@ -262,7 +263,7 @@ export default function HotelDetail() {
                           </td>
                           <td className="py-3 text-right">
                             {user ? (
-                              <Link to={bookingUrl(r.id)}><Button variant="primary">Đặt</Button></Link>
+                              <Link to={bookingUrl(r.id)} onClick={() => aiApi.trackClick(r.id).catch(() => {})}><Button variant="primary">Đặt</Button></Link>
                             ) : (
                               <Link to={loginToBookUrl(r.id)}><Button variant="primary">Đăng nhập để đặt</Button></Link>
                             )}
