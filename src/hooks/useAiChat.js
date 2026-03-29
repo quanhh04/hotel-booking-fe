@@ -18,7 +18,8 @@ export function useAiChat() {
       const botMsg = {
         role: 'bot',
         content: res.reply || res.message || 'Xin lỗi, tôi không hiểu.',
-        rooms: res.rooms || [],
+        rooms: res.results || [],
+        booking: res.booking || null,
         intent: res.intent || null,
         ts: Date.now(),
       };
