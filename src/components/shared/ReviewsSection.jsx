@@ -4,6 +4,7 @@ import Card from "../ui/Card";
 import Button from "../ui/Button";
 import Spinner from "../ui/Spinner";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import { useReviews } from "../../hooks/useReviews";
 import { reviewApi } from "../../api/reviewApi";
 
@@ -106,7 +107,7 @@ export default function ReviewsSection({ hotelId }) {
   const { reviews, total, loading, error, refetch } = useReviews(hotelId);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const toast = useToast();
 
   const stats = useMemo(() => {
     const count = reviews.length;
@@ -125,7 +126,6 @@ export default function ReviewsSection({ hotelId }) {
   async function onSubmitReview({ rating, comment }) {
     if (!user) return;
     setSubmitting(true);
-    setSubmitError("");
     try {
       if (myReview) {
         await reviewApi.updateReview(myReview.id, { rating, comment });
@@ -137,7 +137,7 @@ export default function ReviewsSection({ hotelId }) {
       setOpen(false);
       refetch();
     } catch (err) {
-      setSubmitError(err.message || "Không thể gửi đánh giá");
+      toast.error(err.message || "Không thể gửi đánh giá");
     } finally {
       setSubmitting(false);
     }
@@ -171,10 +171,6 @@ export default function ReviewsSection({ hotelId }) {
           </Button>
         )}
       </div>
-
-      {submitError && (
-        <div className="mt-3 rounded-md bg-red-50 text-red-700 text-sm px-3 py-2">{submitError}</div>
-      )}
 
       {error && (
         <div className="mt-3 rounded-md bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>

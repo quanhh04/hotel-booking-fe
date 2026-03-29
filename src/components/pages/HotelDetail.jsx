@@ -252,7 +252,7 @@ export default function HotelDetail() {
                         <tr key={r.id} className="align-top">
                           <td className="py-3 font-semibold text-slate-900">{r.name}</td>
                           <td className="py-3 text-slate-700">
-                            <div>{r.bed_type}</div>
+                            <div>{r.bed}</div>
                             <div className="text-xs text-slate-500">{r.size}</div>
                             {r.max_guests && <div className="text-xs text-slate-500">Tối đa {r.max_guests} khách</div>}
                           </td>

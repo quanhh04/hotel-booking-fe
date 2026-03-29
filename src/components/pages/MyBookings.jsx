@@ -7,8 +7,9 @@ import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
 import { useBookings } from "../../hooks/useBookings";
 import { bookingApi } from "../../api/bookingApi";
-import { formatVND, formatDateTime } from "../../utils/format";
+import { formatVND, formatDate, formatDateTime } from "../../utils/format";
 import { BOOKING_STATUS_LABELS } from "../../utils/constants";
+import { useToast } from "../../contexts/ToastContext";
 
 function statusBadge(status) {
   const label = BOOKING_STATUS_LABELS[status] || status;
@@ -26,6 +27,7 @@ function statusBadge(status) {
 export default function MyBookings() {
   const { bookings, loading, error, refetch } = useBookings();
   const [cancelling, setCancelling] = useState(null);
+  const toast = useToast();
 
   async function onCancel(id) {
     const ok = window.confirm("Bạn chắc chắn muốn huỷ đơn đặt phòng này?");
@@ -34,9 +36,10 @@ export default function MyBookings() {
     setCancelling(id);
     try {
       await bookingApi.cancelBooking(id);
+      toast.success("Đã huỷ đơn đặt phòng thành công");
       refetch();
     } catch (err) {
-      alert(err.message || "Không thể huỷ đơn đặt phòng");
+      toast.error(err.message || "Không thể huỷ đơn đặt phòng");
     } finally {
       setCancelling(null);
     }
@@ -77,7 +80,7 @@ export default function MyBookings() {
 
                   <div className="mt-3 text-sm text-slate-700 space-y-1">
                     <div><b>Phòng:</b> {b.room_name || "-"}</div>
-                    <div><b>Ngày:</b> {b.check_in} → {b.check_out}</div>
+                    <div><b>Ngày:</b> {formatDate(b.check_in)} → {formatDate(b.check_out)}</div>
                     <div><b>Phương thức:</b> {b.payment_method === "online" ? "Thanh toán online" : "Thanh toán tại khách sạn"}</div>
                   </div>
 

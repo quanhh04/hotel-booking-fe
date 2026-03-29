@@ -7,6 +7,7 @@ import Button from "../ui/Button";
 import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import { hotelApi } from "../../api/hotelApi";
 import { bookingApi } from "../../api/bookingApi";
 import { formatVND } from "../../utils/format";
@@ -43,6 +44,8 @@ export default function Booking() {
   const [sp] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const toast = useToast();
 
   // Fetch hotel + rooms from API
   const [hotel, setHotel] = useState(null);
@@ -94,7 +97,6 @@ export default function Booking() {
 
   // Flow
   const [step, setStep] = useState(1);
-  const [err, setErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [successId, setSuccessId] = useState("");
 
@@ -133,18 +135,15 @@ export default function Booking() {
 
   function goStep2() {
     const msg = validateStep1();
-    if (msg) { setErr(msg); return; }
-    setErr("");
+    if (msg) { toast.error(msg); return; }
     setStep(2);
   }
 
   function goStep3() {
-    setErr("");
     setStep(3);
   }
 
   async function onConfirm() {
-    setErr("");
     setSubmitting(true);
     try {
       const booking = await bookingApi.createBooking({
@@ -155,7 +154,7 @@ export default function Booking() {
       });
       setSuccessId(booking.id || booking.data?.id);
     } catch (error) {
-      setErr(error.message || "Đã có lỗi xảy ra khi đặt phòng");
+      toast.error(error.message || "Đã có lỗi xảy ra khi đặt phòng");
     } finally {
       setSubmitting(false);
     }
@@ -188,10 +187,6 @@ export default function Booking() {
         </div>
         <Stepper step={step} />
       </div>
-
-      {err && (
-        <Card className="p-3 mt-3 border border-red-200 bg-red-50 text-red-700 text-sm">{err}</Card>
-      )}
 
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* LEFT */}

@@ -1,36 +1,38 @@
+const P = import.meta.env.VITE_API_PREFIX ?? '/api';
+
 export const API_PATHS = {
   // Auth
-  AUTH_REGISTER: '/api/auth/register',
-  AUTH_LOGIN: '/api/auth/login',
-  AUTH_ME: '/api/auth/me',
-  AUTH_PROFILE: '/api/auth/profile',
-  AUTH_CHANGE_PASSWORD: '/api/auth/change-password',
+  AUTH_REGISTER: `${P}/auth/register`,
+  AUTH_LOGIN: `${P}/auth/login`,
+  AUTH_ME: `${P}/auth/me`,
+  AUTH_PROFILE: `${P}/auth/profile`,
+  AUTH_CHANGE_PASSWORD: `${P}/auth/change-password`,
 
   // Hotels
-  HOTELS: '/api/hotels',
-  HOTEL_DETAIL: (id) => `/api/hotels/${id}`,
-  HOTEL_ROOMS: (id) => `/api/hotels/${id}/rooms`,
+  HOTELS: `${P}/hotels`,
+  HOTEL_DETAIL: (id) => `${P}/hotels/${id}`,
+  HOTEL_ROOMS: (id) => `${P}/hotels/${id}/rooms`,
 
   // Cities
-  CITIES: '/api/cities',
-  BOOKINGS: '/api/bookings',
-  BOOKING_DETAIL: (id) => `/api/bookings/${id}`,
-  BOOKING_CANCEL: (id) => `/api/bookings/${id}/cancel`,
+  CITIES: `${P}/cities`,
+  BOOKINGS: `${P}/bookings`,
+  BOOKING_DETAIL: (id) => `${P}/bookings/${id}`,
+  BOOKING_CANCEL: (id) => `${P}/bookings/${id}/cancel`,
 
   // Reviews
-  REVIEWS: '/api/reviews',
-  REVIEWS_HOTEL: (hotelId) => `/api/reviews/hotel/${hotelId}`,
-  REVIEW_DETAIL: (id) => `/api/reviews/${id}`,
-  REVIEWS_ME: '/api/reviews/me',
+  REVIEWS: `${P}/reviews`,
+  REVIEWS_HOTEL: (hotelId) => `${P}/reviews/hotel/${hotelId}`,
+  REVIEW_DETAIL: (id) => `${P}/reviews/${id}`,
+  REVIEWS_ME: `${P}/reviews/me`,
 
   // Payments
-  PAYMENTS_PAY: '/api/payments/pay',
-  PAYMENTS: '/api/payments',
+  PAYMENTS_PAY: `${P}/payments/pay`,
+  PAYMENTS: `${P}/payments`,
 
   // Notifications
-  NOTIFICATIONS: '/api/notifications',
-  NOTIFICATION_READ: (id) => `/api/notifications/${id}/read`,
-  NOTIFICATIONS_READ_ALL: '/api/notifications/read-all',
+  NOTIFICATIONS: `${P}/notifications`,
+  NOTIFICATION_READ: (id) => `${P}/notifications/${id}/read`,
+  NOTIFICATIONS_READ_ALL: `${P}/notifications/read-all`,
 };
 
 export const BOOKING_STATUS_LABELS = {
