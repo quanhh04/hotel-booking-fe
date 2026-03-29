@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Container from "../ui/Container";
 import Button from "../ui/Button";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -55,7 +55,7 @@ export default function Header() {
             ) : (
               <>
                 <span className="hidden md:inline text-sm text-white/90">
-                  Xin chào, <b>{user.name}</b>
+                  Xin chào, <b>{user.display_name || user.email}</b>
                 </span>
 
                 <Link to="/me/bookings">

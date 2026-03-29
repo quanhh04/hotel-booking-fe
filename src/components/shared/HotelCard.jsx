@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
-import { formatVND } from "../data/hotels";
+import { formatVND } from "../../utils/format";
 
 export default function HotelCard({ hotel }) {
-  const discount = Number(hotel.discountPercent || 0);
+  const discount = Number(hotel.discount_percent || 0);
   const hasDeal = discount > 0;
 
-  const priceOriginal = Number(hotel.priceFrom || 0);
+  const priceOriginal = Number(hotel.price_from || 0);
   const priceFinal = hasDeal
     ? Math.max(0, Math.round(priceOriginal * (1 - discount / 100)))
     : priceOriginal;
@@ -22,7 +22,7 @@ export default function HotelCard({ hotel }) {
           <div className="relative">
             {img ? (
               <img
-                src={img}
+                src={typeof img === "string" ? img : img.url}
                 alt={hotel.name}
                 className="h-44 w-full rounded-md object-cover"
                 loading="lazy"
@@ -53,24 +53,23 @@ export default function HotelCard({ hotel }) {
               </Link>
 
               <div className="text-sm text-slate-600 mt-1">
-                {hotel.city}
-                {hotel.address ? ` • ${hotel.address}` : ""}
+                {hotel.city || hotel.address}
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2">
-                {(hotel.tags || []).slice(0, 6).map((t) => (
+                {(hotel.amenities || []).slice(0, 6).map((a) => (
                   <span
-                    key={t}
+                    key={a}
                     className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700"
                   >
-                    {t}
+                    {a}
                   </span>
                 ))}
               </div>
 
               {hasDeal && (
                 <div className="mt-2 text-xs text-[#008234] font-semibold">
-                  Ưu đãi trong thời gian có hạn (mock)
+                  Ưu đãi trong thời gian có hạn
                 </div>
               )}
             </div>
@@ -127,7 +126,7 @@ export default function HotelCard({ hotel }) {
                 </>
               )}
 
-              <div className="text-xs text-slate-500">Đã gồm thuế/phí (mock)</div>
+              <div className="text-xs text-slate-500">Đã gồm thuế/phí</div>
             </div>
 
             <Link to={`/hotels/${hotel.id}`}>

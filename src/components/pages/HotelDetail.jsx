@@ -3,8 +3,11 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import Container from "../ui/Container";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
-import { hotels, formatVND } from "../data/hotels";
-import { useAuth } from "../auth/AuthContext";
+import Spinner from "../ui/Spinner";
+import ErrorCard from "../ui/ErrorCard";
+import { useAuth } from "../../contexts/AuthContext";
+import { useHotelDetail } from "../../hooks/useHotelDetail";
+import { formatVND } from "../../utils/format";
 import ReviewsSection from "../shared/ReviewsSection";
 
 function getLabelByRating(rating) {
@@ -12,23 +15,6 @@ function getLabelByRating(rating) {
   if (rating >= 8.5) return "Rất tốt";
   if (rating >= 8) return "Tốt";
   return "Ổn";
-}
-
-function calcDiscountPrice(price, discountPercent) {
-  const p = Number(price || 0);
-  const d = Number(discountPercent || 0);
-  if (!d || d <= 0) return { hasDeal: false, original: p, final: p, discount: 0, saved: 0 };
-  const final = Math.max(0, Math.round(p * (1 - d / 100)));
-  return { hasDeal: true, original: p, final, discount: d, saved: Math.max(0, p - final) };
-}
-
-function buildMockRooms(hotel) {
-  const base = Number(hotel.priceFrom || 900000);
-  return [
-    { id: "r1", type: "Phòng Tiêu Chuẩn", bed: "1 giường đôi", size: "22 m²", refundable: true, breakfast: false, left: 3, price: base },
-    { id: "r2", type: "Phòng Superior", bed: "2 giường đơn", size: "28 m²", refundable: true, breakfast: true, left: 2, price: Math.round(base * 1.25) },
-    { id: "r3", type: "Phòng Deluxe View", bed: "1 giường đôi lớn", size: "32 m²", refundable: false, breakfast: true, left: 1, price: Math.round(base * 1.5) },
-  ];
 }
 
 function GalleryModal({ open, onClose, images, title }) {
@@ -47,21 +33,15 @@ function GalleryModal({ open, onClose, images, title }) {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/70 p-4 overflow-auto"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="fixed inset-0 z-50 bg-black/70 p-4 overflow-auto" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between text-white mb-3">
           <div className="font-semibold">{title}</div>
-          <button onClick={onClose} className="rounded-md bg-white/10 px-3 py-2 text-sm hover:bg-white/20">
-            Đóng (Esc)
-          </button>
+          <button onClick={onClose} className="rounded-md bg-white/10 px-3 py-2 text-sm hover:bg-white/20">Đóng (Esc)</button>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {images.map((src) => (
-            <img key={src} src={src} alt={title} className="h-56 w-full rounded-md object-cover" loading="lazy" />
+          {images.map((src, i) => (
+            <img key={typeof src === "string" ? src : src.url || i} src={typeof src === "string" ? src : src.url} alt={title} className="h-56 w-full rounded-md object-cover" loading="lazy" />
           ))}
         </div>
       </div>
@@ -75,42 +55,48 @@ export default function HotelDetail() {
   const [sp] = useSearchParams();
   const [galleryOpen, setGalleryOpen] = useState(false);
 
-  const hotel = useMemo(() => hotels.find((h) => String(h.id) === String(id)), [id]);
+  const { hotel, rooms, loading, error } = useHotelDetail(id);
 
-  // ✅ an toàn dù hotel = null
-  const discountPercent = Number(hotel?.discountPercent || 0);
+  // Normalize images - BE may return [{id, url}] or string[]
+  // Hook must be called before any early return to satisfy Rules of Hooks
+  const imageList = useMemo(() => {
+    if (!hotel?.images?.length) return [];
+    return hotel.images.map((img) => (typeof img === "string" ? img : img.url));
+  }, [hotel?.images]);
 
-  const roomsRaw = useMemo(() => {
-    if (!hotel) return [];
-    return hotel.rooms?.length ? hotel.rooms : buildMockRooms(hotel);
-  }, [hotel]);
+  if (loading) {
+    return <Container className="py-10"><Spinner text="Đang tải thông tin khách sạn..." /></Container>;
+  }
 
-  const rooms = useMemo(() => {
-    if (!hotel) return [];
-    return roomsRaw.map((r) => ({
-      ...r,
-      deal: calcDiscountPrice(r.price || hotel.priceFrom, discountPercent),
-    }));
-  }, [roomsRaw, hotel, discountPercent]);
+  if (error) {
+    return (
+      <Container className="py-10">
+        <ErrorCard message={error} />
+        <div className="mt-4 text-center">
+          <Link to="/hotels"><Button variant="secondary">Quay lại danh sách</Button></Link>
+        </div>
+      </Container>
+    );
+  }
 
-  // ✅ giờ mới return sớm
   if (!hotel) {
     return (
       <Container className="py-10">
-        <Card className="p-6">Không tìm thấy khách sạn.</Card>
+        <Card className="p-6">
+          Không tìm thấy khách sạn.
+          <div className="mt-3"><Link to="/hotels"><Button variant="secondary">Quay lại danh sách</Button></Link></div>
+        </Card>
       </Container>
     );
   }
 
   const ratingLabel = getLabelByRating(Number(hotel.rating || 0));
+  const description = hotel.description || "Chỗ nghỉ này có vị trí thuận tiện, phù hợp đi công tác hoặc du lịch.";
+  const amenities = hotel.amenities?.length ? hotel.amenities : [];
 
-  const description = hotel.description || "Chỗ nghỉ này có vị trí thuận tiện, phù hợp đi công tác hoặc du lịch. (Mock)";
-  const amenities = hotel.amenities?.length ? hotel.amenities : ["WiFi miễn phí", "Lễ tân 24/7", "Điều hoà", "Chỗ đậu xe", "Nhà hàng"];
-
-  // ✅ “Giá từ” phải lấy theo giá sau giảm (min)
-  const minFinal = Math.min(...rooms.map((x) => x.deal.final));
-  const minOriginal = Math.min(...rooms.map((x) => x.deal.original));
-  const hasDeal = discountPercent > 0;
+  const minPrice = rooms.length > 0
+    ? Math.min(...rooms.map((r) => Number(r.price_per_night || r.price || 0)))
+    : Number(hotel.price_from || 0);
 
   const checkIn = sp.get("checkIn");
   const checkOut = sp.get("checkOut");
@@ -127,8 +113,8 @@ export default function HotelDetail() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const gallery = hotel.images?.slice(0, 5) || [];
-  const mainImg = hotel.images?.[0];
+  const gallery = imageList.slice(0, 5);
+  const mainImg = imageList[0];
 
   return (
     <div className="bg-slate-50">
@@ -145,27 +131,9 @@ export default function HotelDetail() {
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900">{hotel.name}</h1>
             <div className="mt-1 text-sm text-slate-600">
-              {hotel.address} • {hotel.city} • <span className="font-semibold">{hotel.stars} sao</span>
+              {hotel.address} • <span className="font-semibold">{hotel.stars} sao</span>
             </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(hotel.tags || []).slice(0, 6).map((t) => (
-                <span key={t} className="text-xs rounded-full bg-white px-2 py-1 text-slate-700 border border-slate-200">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {hasDeal && (
-              <div className="mt-2 inline-flex items-center gap-2">
-                <span className="inline-flex items-center rounded-md bg-[#008234] px-2 py-1 text-xs font-extrabold text-white">
-                  Giảm {discountPercent}%
-                </span>
-                <span className="text-xs text-slate-600">Ưu đãi trong thời gian có hạn (mock)</span>
-              </div>
-            )}
           </div>
-
           <div className="flex items-center gap-2">
             <div className="text-right">
               <div className="text-sm font-semibold text-slate-700">{ratingLabel}</div>
@@ -182,17 +150,13 @@ export default function HotelDetail() {
             <div className="text-xs text-slate-600 mt-1">Xem điều kiện hoàn huỷ trong bảng phòng.</div>
           </Card>
           <Card className="p-3">
-            <div className="text-sm font-extrabold text-slate-900">Không cần thẻ tín dụng (mock)</div>
-            <div className="text-xs text-slate-600 mt-1">Demo đồ án: thanh toán sẽ làm ở Phần 5.</div>
+            <div className="text-sm font-extrabold text-slate-900">Thanh toán linh hoạt</div>
+            <div className="text-xs text-slate-600 mt-1">Thanh toán online hoặc tại khách sạn.</div>
           </Card>
           <Card className="p-3">
             <div className="text-sm font-extrabold text-slate-900">Giá tốt hôm nay</div>
-            {/* ✅ đổi sang giá sau giảm */}
             <div className="text-xs text-slate-600 mt-1">
-              Giá từ <b>{formatVND(minFinal)}</b>/đêm.
-              {hasDeal && (
-                <span className="ml-2 text-slate-500 line-through">{formatVND(minOriginal)}</span>
-              )}
+              Giá từ <b>{formatVND(minPrice)}</b>/đêm.
             </div>
           </Card>
         </div>
@@ -201,11 +165,12 @@ export default function HotelDetail() {
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <div className="font-extrabold text-slate-900">Ảnh</div>
-            <button className="text-sm font-semibold text-[#0071c2] hover:underline" onClick={() => setGalleryOpen(true)}>
-              Xem tất cả ảnh
-            </button>
+            {imageList.length > 0 && (
+              <button className="text-sm font-semibold text-[#0071c2] hover:underline" onClick={() => setGalleryOpen(true)}>
+                Xem tất cả ảnh
+              </button>
+            )}
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
             <div className="md:col-span-6">
               {mainImg ? (
@@ -215,11 +180,11 @@ export default function HotelDetail() {
               )}
             </div>
             <div className="md:col-span-6 grid grid-cols-2 gap-2">
-              {gallery.slice(1, 5).map((src) => (
-                <img key={src} src={src} alt={hotel.name} className="h-36 w-full rounded-md object-cover" loading="lazy" />
+              {gallery.slice(1, 5).map((src, i) => (
+                <img key={src || i} src={src} alt={hotel.name} className="h-36 w-full rounded-md object-cover" loading="lazy" />
               ))}
               {gallery.length < 5 &&
-                Array.from({ length: 5 - gallery.length }).map((_, i) => (
+                Array.from({ length: Math.max(0, 5 - gallery.length) }).map((_, i) => (
                   <div key={i} className="h-36 rounded-md bg-slate-200" />
                 ))}
             </div>
@@ -236,22 +201,21 @@ export default function HotelDetail() {
                   <h2 className="font-extrabold text-slate-900">Tổng quan</h2>
                   <p className="mt-2 text-sm text-slate-700 leading-relaxed">{description}</p>
                 </div>
-
                 <div className="hidden sm:block">
-                  <Button variant="primary" onClick={scrollToRooms}>
-                    Xem chỗ trống
-                  </Button>
+                  <Button variant="primary" onClick={scrollToRooms}>Xem chỗ trống</Button>
                 </div>
               </div>
 
-              <h3 className="mt-4 font-extrabold text-slate-900">Tiện ích</h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {amenities.map((a) => (
-                  <span key={a} className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700">
-                    {a}
-                  </span>
-                ))}
-              </div>
+              {amenities.length > 0 && (
+                <>
+                  <h3 className="mt-4 font-extrabold text-slate-900">Tiện ích</h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {amenities.map((a) => (
+                      <span key={a} className="text-xs rounded-full bg-slate-100 px-2 py-1 text-slate-700">{a}</span>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {(checkIn || checkOut || guests) && (
                 <div className="mt-4 text-sm text-slate-600">
@@ -267,95 +231,48 @@ export default function HotelDetail() {
             <Card className="p-4" id="rooms">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="font-extrabold text-slate-900">Chọn phòng</h2>
-                <div className="text-xs text-slate-600">Giá hiển thị: /đêm (mock)</div>
+                <div className="text-xs text-slate-600">Giá hiển thị: /đêm</div>
               </div>
 
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-slate-600 border-b">
-                      <th className="py-2">Loại phòng</th>
-                      <th className="py-2">Chi tiết</th>
-                      <th className="py-2">Chính sách</th>
-                      <th className="py-2 text-right">Giá</th>
-                      <th className="py-2 text-right">Đặt</th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="divide-y divide-slate-200">
-                    {rooms.map((r) => (
-                      <tr key={r.id} className="align-top">
-                        <td className="py-3 font-semibold text-slate-900">
-                          {r.type}
-                          {typeof r.left === "number" && r.left <= 2 && (
-                            <div className="text-xs text-red-700 font-semibold mt-1">
-                              Chỉ còn {r.left} phòng!
-                            </div>
-                          )}
-                        </td>
-
-                        <td className="py-3 text-slate-700">
-                          <div>{r.bed}</div>
-                          <div className="text-xs text-slate-500">{r.size}</div>
-                          {r.breakfast && (
-                            <div className="mt-1 text-xs text-green-700 font-semibold">
-                              Bao gồm bữa sáng
-                            </div>
-                          )}
-                        </td>
-
-                        <td className="py-3 text-slate-700">
-                          {r.refundable ? (
-                            <>
-                              <div className="text-green-700 font-semibold">Có hoàn huỷ</div>
-                              <div className="text-xs text-slate-500">(mock) Hoàn huỷ trước 24h</div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="text-red-700 font-semibold">Không hoàn huỷ</div>
-                              <div className="text-xs text-slate-500">(mock) Không hoàn tiền</div>
-                            </>
-                          )}
-                        </td>
-
-                        {/* ✅ GIÁ: hiển thị giá sau giảm + gạch giá gốc */}
-                        <td className="py-3 text-right">
-                          {r.deal.hasDeal ? (
-                            <>
-                              <div className="text-xs text-slate-500 line-through">
-                                {formatVND(r.deal.original)}
-                              </div>
-                              <div className="font-extrabold text-slate-900">
-                                {formatVND(r.deal.final)}
-                              </div>
-                              <div className="text-xs text-[#008234] font-semibold">
-                                Giảm {r.deal.discount}% (mock)
-                              </div>
-                            </>
-                          ) : (
-                            <div className="font-extrabold text-slate-900">
-                              {formatVND(r.deal.final)}
-                            </div>
-                          )}
-                          <div className="text-xs text-slate-500">Đã gồm thuế/phí (mock)</div>
-                        </td>
-
-                        <td className="py-3 text-right">
-                          {user ? (
-                            <Link to={bookingUrl(r.id)}>
-                              <Button variant="primary">Đặt</Button>
-                            </Link>
-                          ) : (
-                            <Link to={loginToBookUrl(r.id)}>
-                              <Button variant="primary">Đăng nhập để đặt</Button>
-                            </Link>
-                          )}
-                        </td>
+              {rooms.length === 0 ? (
+                <div className="mt-3 text-sm text-slate-600">Chưa có thông tin phòng.</div>
+              ) : (
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-slate-600 border-b">
+                        <th className="py-2">Loại phòng</th>
+                        <th className="py-2">Chi tiết</th>
+                        <th className="py-2 text-right">Giá</th>
+                        <th className="py-2 text-right">Đặt</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {rooms.map((r) => (
+                        <tr key={r.id} className="align-top">
+                          <td className="py-3 font-semibold text-slate-900">{r.name}</td>
+                          <td className="py-3 text-slate-700">
+                            <div>{r.bed_type}</div>
+                            <div className="text-xs text-slate-500">{r.size}</div>
+                            {r.max_guests && <div className="text-xs text-slate-500">Tối đa {r.max_guests} khách</div>}
+                          </td>
+                          <td className="py-3 text-right">
+                            <div className="font-extrabold text-slate-900">{formatVND(r.price_per_night || r.price)}</div>
+                            <div className="text-xs text-slate-500">Đã gồm thuế/phí</div>
+                          </td>
+                          <td className="py-3 text-right">
+                            {user ? (
+                              <Link to={bookingUrl(r.id)}><Button variant="primary">Đặt</Button></Link>
+                            ) : (
+                              <Link to={loginToBookUrl(r.id)}><Button variant="primary">Đăng nhập để đặt</Button></Link>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </Card>
           </div>
 
@@ -364,27 +281,8 @@ export default function HotelDetail() {
             <div className="lg:sticky lg:top-4 space-y-3">
               <Card className="p-4 border-2 border-[#febb02]">
                 <div className="text-sm text-slate-600">Giá từ</div>
-
-                {/* ✅ BOX GIÁ: ưu đãi + gạch giá gốc */}
-                {hasDeal ? (
-                  <>
-                    <div className="mt-1 text-xs text-slate-500 line-through">
-                      {formatVND(minOriginal)}
-                    </div>
-                    <div className="text-2xl font-extrabold text-slate-900">
-                      {formatVND(minFinal)}
-                    </div>
-                    <div className="text-xs text-[#008234] font-semibold mt-1">
-                      Giảm {discountPercent}% (mock)
-                    </div>
-                  </>
-                ) : (
-                  <div className="mt-1 text-2xl font-extrabold text-slate-900">
-                    {formatVND(minFinal)}
-                  </div>
-                )}
-
-                <div className="text-xs text-slate-500 mt-1">/đêm (mock)</div>
+                <div className="mt-1 text-2xl font-extrabold text-slate-900">{formatVND(minPrice)}</div>
+                <div className="text-xs text-slate-500 mt-1">/đêm</div>
 
                 <div className="mt-3 text-sm text-slate-700">
                   <div className="flex items-center justify-between">
@@ -411,9 +309,7 @@ export default function HotelDetail() {
               </Card>
               <ReviewsSection hotelId={hotel.id} />
               <Link to="/hotels">
-                <Button variant="secondary" className="w-full">
-                  Quay lại danh sách
-                </Button>
+                <Button variant="secondary" className="w-full">Quay lại danh sách</Button>
               </Link>
             </div>
           </div>
@@ -423,7 +319,7 @@ export default function HotelDetail() {
       <GalleryModal
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}
-        images={hotel.images || []}
+        images={imageList}
         title={hotel.name}
       />
     </div>

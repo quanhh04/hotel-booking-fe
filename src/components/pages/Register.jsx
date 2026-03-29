@@ -4,7 +4,7 @@ import Container from "../ui/Container";
 import Card from "../ui/Card";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Register() {
   const { register } = useAuth();
@@ -17,15 +17,21 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+    setLoading(true);
 
-    const res = register({ name, email, password });
-    if (!res.ok) return setErr(res.message);
-
-    navigate(returnTo, { replace: true });
+    try {
+      await register(email, password);
+      navigate(returnTo, { replace: true });
+    } catch (error) {
+      setErr(error.message || "Đã có lỗi xảy ra khi đăng ký");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -76,10 +82,14 @@ export default function Register() {
               />
             </div>
 
-            <Button variant="primary" className="w-full h-11" type="submit">
-              Tạo tài khoản
+            <Button
+              variant="primary"
+              className="w-full h-11"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
             </Button>
-
           </form>
 
           <div className="mt-4 text-sm text-slate-600">
