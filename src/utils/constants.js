@@ -7,6 +7,7 @@ export const API_PATHS = {
   AUTH_ME: `${P}/auth/me`,
   AUTH_PROFILE: `${P}/auth/profile`,
   AUTH_CHANGE_PASSWORD: `${P}/auth/change-password`,
+  AUTH_FORGOT_PASSWORD: `${P}/auth/forgot-password`,
 
   // Hotels
   HOTELS: `${P}/hotels`,
@@ -28,6 +29,7 @@ export const API_PATHS = {
   // Payments
   PAYMENTS_PAY: `${P}/payments/pay`,
   PAYMENTS: `${P}/payments`,
+  PAYMENT_DETAIL: (id) => `${P}/payments/${id}`,
 
   // Notifications
   NOTIFICATIONS: `${P}/notifications`,

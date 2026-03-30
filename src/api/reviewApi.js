@@ -10,5 +10,7 @@ export const reviewApi = {
   updateReview: (id, data) =>
     httpClient.put(API_PATHS.REVIEW_DETAIL(id), data),
 
+  deleteReview: (id) => httpClient.del(API_PATHS.REVIEW_DETAIL(id)),
+
   getMyReviews: () => httpClient.get(API_PATHS.REVIEWS_ME),
 };
