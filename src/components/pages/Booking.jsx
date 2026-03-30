@@ -10,7 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { hotelApi } from "../../api/hotelApi";
 import { bookingApi } from "../../api/bookingApi";
-import { formatVND } from "../../utils/format";
+import { formatVND, formatDate } from "../../utils/format";
 
 function calcNights(checkIn, checkOut) {
   if (!checkIn || !checkOut) return 0;
@@ -169,6 +169,17 @@ export default function Booking() {
           <div className="mt-2 text-sm text-slate-600">
             Mã đơn: <span className="font-semibold">{successId}</span>
           </div>
+
+          {paymentMethod === "online" && (
+            <Card className="mt-4 p-4 border-2 border-[#febb02] bg-[#fff8e1] text-left">
+              <div className="text-sm font-semibold text-slate-900">💳 Thanh toán online</div>
+              <div className="text-xs text-slate-600 mt-1">Đơn đặt phòng đang chờ thanh toán. Bấm nút bên dưới để thanh toán ngay.</div>
+              <div className="mt-3">
+                <Link to="/me/bookings"><Button variant="primary">Đi tới thanh toán →</Button></Link>
+              </div>
+            </Card>
+          )}
+
           <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
             <Link to="/me/bookings"><Button variant="primary">Xem lịch sử đặt phòng</Button></Link>
             <Link to={`/hotels/${hotel.id}`}><Button variant="secondary">Quay lại khách sạn</Button></Link>
@@ -275,7 +286,7 @@ export default function Booking() {
                 <div className="mt-3 text-sm text-slate-700 space-y-2">
                   <div><b>Khách sạn:</b> {hotel.name}</div>
                   <div><b>Phòng:</b> {room?.name}</div>
-                  <div><b>Ngày:</b> {checkIn} → {checkOut} • <b>{nights}</b> đêm</div>
+                  <div><b>Ngày:</b> {formatDate(checkIn)} → {formatDate(checkOut)} • <b>{nights}</b> đêm</div>
                   <div><b>Khách:</b> {guests}</div>
                   <div><b>Khách đặt:</b> {fullName} • {email}</div>
                   <div><b>Thanh toán:</b> {paymentMethod === "online" ? "Thanh toán online" : "Thanh toán tại khách sạn"}</div>
@@ -321,7 +332,7 @@ export default function Booking() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Ngày</span>
-                  <span className="font-semibold">{checkIn && checkOut ? `${checkIn} → ${checkOut}` : "-"}</span>
+                  <span className="font-semibold">{checkIn && checkOut ? `${formatDate(checkIn)} → ${formatDate(checkOut)}` : "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Số đêm</span>

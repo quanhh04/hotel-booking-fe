@@ -10,6 +10,8 @@ const NAV = [
   { to: "/admin/users", label: "Người dùng", icon: "👥" },
   { to: "/admin/cities", label: "Thành phố", icon: "🏙️" },
   { to: "/admin/payments", label: "Thanh toán", icon: "💳" },
+  { to: "/admin/reviews", label: "Đánh giá", icon: "⭐" },
+  { to: "/admin/ai-stats", label: "AI Analytics", icon: "🤖" },
 ];
 
 export default function AdminLayout() {

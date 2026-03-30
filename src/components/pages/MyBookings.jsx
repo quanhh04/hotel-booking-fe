@@ -7,6 +7,7 @@ import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
 import { useBookings } from "../../hooks/useBookings";
 import { bookingApi } from "../../api/bookingApi";
+import { paymentApi } from "../../api/paymentApi";
 import { formatVND, formatDate, formatDateTime } from "../../utils/format";
 import { BOOKING_STATUS_LABELS } from "../../utils/constants";
 import { useToast } from "../../contexts/ToastContext";
@@ -27,6 +28,7 @@ function statusBadge(status) {
 export default function MyBookings() {
   const { bookings, loading, error, refetch } = useBookings();
   const [cancelling, setCancelling] = useState(null);
+  const [paying, setPaying] = useState(null);
   const toast = useToast();
 
   async function onCancel(id) {
@@ -42,6 +44,20 @@ export default function MyBookings() {
       toast.error(err.message || "Không thể huỷ đơn đặt phòng");
     } finally {
       setCancelling(null);
+    }
+  }
+
+  async function onPay(id) {
+    if (!window.confirm("Xác nhận thanh toán đơn #" + id + "?")) return;
+    setPaying(id);
+    try {
+      await paymentApi.payBooking(id);
+      toast.success("Thanh toán thành công!");
+      refetch();
+    } catch (err) {
+      toast.error(err.message || "Thanh toán thất bại");
+    } finally {
+      setPaying(null);
     }
   }
 
@@ -102,6 +118,16 @@ export default function MyBookings() {
                       </Link>
                     )}
 
+                    {b.status === "PENDING" && b.payment_method === "online" && (
+                      <Button
+                        variant="primary"
+                        onClick={() => onPay(b.id)}
+                        disabled={paying === b.id}
+                      >
+                        {paying === b.id ? "Đang xử lý..." : "💳 Thanh toán"}
+                      </Button>
+                    )}
+
                     {(b.status === "CONFIRMED" || b.status === "PENDING") && (
                       <Button
                         variant="secondary"
@@ -110,6 +136,12 @@ export default function MyBookings() {
                       >
                         {cancelling === b.id ? "Đang huỷ..." : "Huỷ đơn"}
                       </Button>
+                    )}
+
+                    {(b.status === "PAID" || b.status === "CONFIRMED") && b.hotel_id && (
+                      <Link to={`/hotels/${b.hotel_id}#reviews`}>
+                        <Button variant="secondary">⭐ Đánh giá</Button>
+                      </Link>
                     )}
                   </div>
                 </div>

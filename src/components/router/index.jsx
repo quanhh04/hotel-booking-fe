@@ -9,6 +9,8 @@ import Register from "../pages/Register";
 import RequireAuth from "../auth/RequireAuth";
 import MyBookings from "../pages/MyBookings";
 import Profile from "../pages/Profile";
+import MyReviews from "../pages/MyReviews";
+import ForgotPassword from "../pages/ForgotPassword";
 import AdminLayout from "../admin/AdminLayout";
 import Dashboard from "../admin/Dashboard";
 import AdminHotels from "../admin/AdminHotels";
@@ -17,6 +19,8 @@ import AdminBookings from "../admin/AdminBookings";
 import AdminUsers from "../admin/AdminUsers";
 import AdminCities from "../admin/AdminCities";
 import AdminPayments from "../admin/AdminPayments";
+import AdminReviews from "../admin/AdminReviews";
+import AdminAiStats from "../admin/AdminAiStats";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +32,7 @@ export const router = createBrowserRouter([
 
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/forgot-password", element: <ForgotPassword /> },
 
       {
         path: "/booking/:id",
@@ -49,11 +54,12 @@ export const router = createBrowserRouter([
 
       {
         path: "/me/profile",
-        element: (
-          <RequireAuth>
-            <Profile />
-          </RequireAuth>
-        ),
+        element: <RequireAuth><Profile /></RequireAuth>,
+      },
+
+      {
+        path: "/me/reviews",
+        element: <RequireAuth><MyReviews /></RequireAuth>,
       },
     ],
   },
@@ -68,6 +74,8 @@ export const router = createBrowserRouter([
       { path: "users", element: <AdminUsers /> },
       { path: "cities", element: <AdminCities /> },
       { path: "payments", element: <AdminPayments /> },
+      { path: "reviews", element: <AdminReviews /> },
+      { path: "ai-stats", element: <AdminAiStats /> },
     ],
   },
 ]);

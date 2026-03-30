@@ -9,22 +9,25 @@ import { useReviews } from "../../hooks/useReviews";
 import { reviewApi } from "../../api/reviewApi";
 
 function fmtTime(iso) {
-  try {
-    return new Date(iso).toLocaleString("vi-VN");
-  } catch {
-    return iso || "";
-  }
+  if (!iso) return "";
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
 }
 
-function ReviewModal({ open, onClose, defaultRating, defaultComment, onSubmit, submitting }) {
-  const [rating, setRating] = useState(defaultRating ?? 9);
+function ReviewModal({ open, onClose, defaultRating, defaultComment, onSubmit, submitting, bookingId, isEditing }) {
+  const [rating, setRating] = useState(defaultRating ?? 8);
   const [comment, setComment] = useState(defaultComment ?? "");
   const [err, setErr] = useState("");
 
   // Reset state when modal opens
   useEffect(() => {
     if (open) {
-      setRating(defaultRating ?? 9);
+      setRating(defaultRating ?? 8);
       setComment(defaultComment ?? "");
       setErr("");
     }
@@ -36,8 +39,8 @@ function ReviewModal({ open, onClose, defaultRating, defaultComment, onSubmit, s
     setErr("");
     const r = Number(rating);
     if (!Number.isFinite(r) || r < 1 || r > 10) return setErr("Điểm đánh giá phải từ 1 đến 10.");
-    if (!comment.trim()) return setErr("Vui lòng nhập nội dung đánh giá.");
-    onSubmit({ rating: r, comment: comment.trim() });
+    if (comment.trim().length < 10) return setErr("Nội dung đánh giá phải ít nhất 10 ký tự.");
+    onSubmit({ rating: r, comment: comment.trim(), bookingId });
   }
 
   return (
@@ -70,10 +73,9 @@ function ReviewModal({ open, onClose, defaultRating, defaultComment, onSubmit, s
             onChange={(e) => setRating(e.target.value)}
             className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#0071c2] focus:ring-2 focus:ring-[#0071c2]/15"
           >
-            {Array.from({ length: 10 }).map((_, i) => {
-              const val = i + 1;
-              return <option key={val} value={val}>{val}</option>;
-            })}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => (
+              <option key={val} value={val}>{val}</option>
+            ))}
           </select>
         </div>
 
@@ -107,7 +109,22 @@ export default function ReviewsSection({ hotelId }) {
   const { reviews, total, loading, error, refetch } = useReviews(hotelId);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [userBookingId, setUserBookingId] = useState(null);
   const toast = useToast();
+
+  // Fetch user's booking for this hotel to get booking_id for review
+  useEffect(() => {
+    if (!user) return;
+    import("../../api/bookingApi").then(({ bookingApi }) => {
+      bookingApi.getMyBookings().then(bookings => {
+        const list = Array.isArray(bookings) ? bookings : bookings.bookings || [];
+        const match = list.find(b =>
+          String(b.hotel_id) === String(hotelId) && ["PAID", "CONFIRMED"].includes(b.status)
+        );
+        if (match) setUserBookingId(match.id);
+      }).catch(() => {});
+    });
+  }, [user, hotelId]);
 
   const stats = useMemo(() => {
     const count = reviews.length;
@@ -123,16 +140,19 @@ export default function ReviewsSection({ hotelId }) {
     return reviews.find((r) => String(r.user_id) === String(user.id));
   }, [reviews, user]);
 
-  async function onSubmitReview({ rating, comment }) {
+  async function onSubmitReview({ rating, comment, bookingId }) {
     if (!user) return;
     setSubmitting(true);
     try {
       if (myReview) {
         await reviewApi.updateReview(myReview.id, { rating, comment });
       } else {
-        // BE requires booking_id — user needs a paid booking to review
-        // For now, pass hotelId-based data; BE will validate
-        await reviewApi.createReview({ hotel_id: hotelId, rating, comment });
+        if (!bookingId) {
+          toast.error("Bạn cần có booking đã thanh toán để đánh giá");
+          setSubmitting(false);
+          return;
+        }
+        await reviewApi.createReview({ booking_id: bookingId, rating, comment });
       }
       setOpen(false);
       refetch();
@@ -165,10 +185,12 @@ export default function ReviewsSection({ hotelId }) {
           <Link to={`/login?returnTo=${returnTo}`}>
             <Button variant="primary">Đăng nhập để đánh giá</Button>
           </Link>
+        ) : myReview ? (
+          <Button variant="primary" onClick={() => setOpen(true)}>Sửa đánh giá</Button>
+        ) : userBookingId ? (
+          <Button variant="primary" onClick={() => setOpen(true)}>Viết đánh giá</Button>
         ) : (
-          <Button variant="primary" onClick={() => setOpen(true)}>
-            {myReview ? "Sửa đánh giá" : "Viết đánh giá"}
-          </Button>
+          <div className="text-xs text-slate-500">Cần có booking để đánh giá</div>
         )}
       </div>
 
@@ -215,10 +237,12 @@ export default function ReviewsSection({ hotelId }) {
       <ReviewModal
         open={open}
         onClose={() => setOpen(false)}
-        defaultRating={myReview?.rating ?? 9}
+        defaultRating={myReview?.rating ?? 8}
         defaultComment={myReview?.comment ?? ""}
         onSubmit={onSubmitReview}
         submitting={submitting}
+        bookingId={userBookingId}
+        isEditing={!!myReview}
       />
     </Card>
   );

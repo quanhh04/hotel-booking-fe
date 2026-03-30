@@ -4,6 +4,7 @@ import Container from "../ui/Container";
 import Button from "../ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
 import { notificationApi } from "../../api/notificationApi";
+import { formatDateTime } from "../../utils/format";
 
 function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -55,7 +56,7 @@ function NotificationBell() {
               <div key={n.id} onClick={() => !n.is_read && markRead(n.id)}
                 className={`px-3 py-2.5 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition ${!n.is_read ? "bg-blue-50/50" : ""}`}>
                 <div className="text-sm text-slate-800">{n.message || n.title}</div>
-                <div className="text-xs text-slate-400 mt-0.5">{new Date(n.created_at).toLocaleString("vi-VN")}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{formatDateTime(n.created_at)}</div>
               </div>
             ))}
           </div>

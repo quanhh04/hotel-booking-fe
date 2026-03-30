@@ -75,14 +75,15 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-4 text-sm text-slate-600">
-            Chưa có tài khoản?{" "}
+          <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+            <Link to="/forgot-password" className="text-[#0071c2] hover:underline">Quên mật khẩu?</Link>
+            <span>Chưa có tài khoản?{" "}
             <Link
               className="text-[#0071c2] font-semibold hover:underline"
               to={`/register?returnTo=${encodeURIComponent(returnTo)}`}
             >
               Đăng ký
-            </Link>
+            </Link></span>
           </div>
         </Card>
       </div>
