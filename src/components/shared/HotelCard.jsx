@@ -4,13 +4,7 @@ import Button from "../ui/Button";
 import { formatVND } from "../../utils/format";
 
 export default function HotelCard({ hotel }) {
-  const discount = Number(hotel.discount_percent || 0);
-  const hasDeal = discount > 0;
-
   const priceOriginal = Number(hotel.price_from || 0);
-  const priceFinal = hasDeal
-    ? Math.max(0, Math.round(priceOriginal * (1 - discount / 100)))
-    : priceOriginal;
 
   const img = hotel.images?.[0];
 
@@ -29,14 +23,6 @@ export default function HotelCard({ hotel }) {
               />
             ) : (
               <div className="h-44 w-full rounded-md bg-slate-200" />
-            )}
-
-            {hasDeal && (
-              <div className="absolute left-2 top-2">
-                <span className="inline-flex items-center rounded-md bg-[#008234] px-2 py-1 text-xs font-extrabold text-white shadow">
-                  Giảm {discount}%
-                </span>
-              </div>
             )}
           </div>
         </div>
@@ -66,12 +52,6 @@ export default function HotelCard({ hotel }) {
                   </span>
                 ))}
               </div>
-
-              {hasDeal && (
-                <div className="mt-2 text-xs text-[#008234] font-semibold">
-                  Ưu đãi trong thời gian có hạn
-                </div>
-              )}
             </div>
 
             {/* Rating box */}
@@ -99,33 +79,10 @@ export default function HotelCard({ hotel }) {
           {/* Price + CTA */}
           <div className="mt-auto flex items-end justify-between pt-3">
             <div className="text-sm text-slate-600">
-              {hasDeal ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 line-through">
-                      {formatVND(priceOriginal)}
-                    </span>
-                    <span className="text-xs rounded-full bg-[#febb02] px-2 py-0.5 font-bold text-[#003580]">
-                      Member deal
-                    </span>
-                  </div>
-
-                  <div className="mt-1">
-                    Giá ưu đãi{" "}
-                    <span className="font-extrabold text-slate-900">
-                      {formatVND(priceFinal)}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  Giá từ{" "}
-                  <span className="font-extrabold text-slate-900">
-                    {formatVND(priceOriginal)}
-                  </span>
-                </>
-              )}
-
+              Giá từ{" "}
+              <span className="font-extrabold text-slate-900">
+                {formatVND(priceOriginal)}
+              </span>
               <div className="text-xs text-slate-500">Đã gồm thuế/phí</div>
             </div>
 

@@ -29,7 +29,6 @@ export const API_PATHS = {
   // Payments
   PAYMENTS_PAY: `${P}/payments/pay`,
   PAYMENTS: `${P}/payments`,
-  PAYMENT_DETAIL: (id) => `${P}/payments/${id}`,
 
   // Notifications
   NOTIFICATIONS: `${P}/notifications`,

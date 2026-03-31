@@ -6,6 +6,4 @@ export const paymentApi = {
     httpClient.post(API_PATHS.PAYMENTS_PAY, { booking_id: bookingId }),
 
   getMyPayments: () => httpClient.get(API_PATHS.PAYMENTS),
-
-  getPaymentDetail: (id) => httpClient.get(API_PATHS.PAYMENT_DETAIL(id)),
 };
