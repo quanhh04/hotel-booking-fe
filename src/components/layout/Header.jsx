@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Container from "../ui/Container";
 import Button from "../ui/Button";
@@ -10,17 +10,24 @@ function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
   const ref = useRef(null);
 
-  const fetch = useCallback(async () => {
-    try {
-      const res = await notificationApi.getNotifications(1, 10);
-      setNotifs(res.notifications || []);
-      setUnread(res.unread_count || 0);
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => { fetch(); const t = setInterval(fetch, 30000); return () => clearInterval(t); }, [fetch]);
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchNotifs() {
+      try {
+        const res = await notificationApi.getNotifications(1, 10);
+        if (!cancelled) {
+          setNotifs(res.notifications || []);
+          setUnread(res.unread_count || 0);
+        }
+      } catch { /* ignore */ }
+    }
+    fetchNotifs();
+    const t = setInterval(fetchNotifs, 30000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [refreshKey]);
 
   useEffect(() => {
     function onClick(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
@@ -29,11 +36,11 @@ function NotificationBell() {
   }, []);
 
   async function markAllRead() {
-    try { await notificationApi.markAllAsRead(); fetch(); } catch { /* ignore */ }
+    try { await notificationApi.markAllAsRead(); setRefreshKey((k) => k + 1); } catch { /* ignore */ }
   }
 
   async function markRead(id) {
-    try { await notificationApi.markAsRead(id); fetch(); } catch { /* ignore */ }
+    try { await notificationApi.markAsRead(id); setRefreshKey((k) => k + 1); } catch { /* ignore */ }
   }
 
   return (

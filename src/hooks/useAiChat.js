@@ -1,12 +1,12 @@
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { aiApi } from '../api/aiApi';
 
 export function useAiChat() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const sessionRef = useRef(crypto.randomUUID());
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
 
-  const send = useCallback(async (text) => {
+  async function send(text) {
     if (!text.trim()) return;
 
     const userMsg = { role: 'user', content: text, ts: Date.now() };
@@ -14,7 +14,7 @@ export function useAiChat() {
     setLoading(true);
 
     try {
-      const res = await aiApi.chat(text, sessionRef.current);
+      const res = await aiApi.chat(text, sessionId);
       const botMsg = {
         role: 'bot',
         content: res.reply || res.message || 'Xin lỗi, tôi không hiểu.',
@@ -32,12 +32,12 @@ export function useAiChat() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
-  const clear = useCallback(() => {
+  function clear() {
     setMessages([]);
-    sessionRef.current = crypto.randomUUID();
-  }, []);
+    setSessionId(crypto.randomUUID());
+  }
 
   return { messages, loading, send, clear };
 }

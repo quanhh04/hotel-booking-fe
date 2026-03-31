@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import Card from "../ui/Card";
@@ -14,24 +14,30 @@ export default function MyReviews() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const fetch = useCallback(async () => {
-    setLoading(true); setError(null);
-    try { const res = await reviewApi.getMyReviews(); setReviews(Array.isArray(res) ? res : res.reviews || []); }
-    catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchReviews() {
+      setLoading(true); setError(null);
+      try { const res = await reviewApi.getMyReviews(); if (!cancelled) setReviews(Array.isArray(res) ? res : res.reviews || []); }
+      catch (err) { if (!cancelled) setError(err.message); }
+      finally { if (!cancelled) setLoading(false); }
+    }
+    fetchReviews();
+    return () => { cancelled = true; };
+  }, [refreshKey]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  function refetch() { setRefreshKey((k) => k + 1); }
 
   async function onDelete(id) {
     if (!window.confirm("Xoá đánh giá này?")) return;
-    try { await reviewApi.deleteReview(id); toast.success("Đã xoá"); fetch(); }
+    try { await reviewApi.deleteReview(id); toast.success("Đã xoá"); refetch(); }
     catch (err) { toast.error(err.message); }
   }
 
   if (loading) return <Container className="py-6"><Spinner text="Đang tải đánh giá..." /></Container>;
-  if (error) return <Container className="py-6"><ErrorCard message={error} onRetry={fetch} /></Container>;
+  if (error) return <Container className="py-6"><ErrorCard message={error} onRetry={refetch} /></Container>;
 
   return (
     <Container className="py-6">

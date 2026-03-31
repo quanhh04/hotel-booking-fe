@@ -7,6 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { useReviews } from "../../hooks/useReviews";
 import { reviewApi } from "../../api/reviewApi";
+import { bookingApi } from "../../api/bookingApi";
 
 function fmtTime(iso) {
   if (!iso) return "";
@@ -115,15 +116,16 @@ export default function ReviewsSection({ hotelId }) {
   // Fetch user's booking for this hotel to get booking_id for review
   useEffect(() => {
     if (!user) return;
-    import("../../api/bookingApi").then(({ bookingApi }) => {
-      bookingApi.getMyBookings().then(bookings => {
-        const list = Array.isArray(bookings) ? bookings : bookings.bookings || [];
-        const match = list.find(b =>
-          String(b.hotel_id) === String(hotelId) && ["PAID", "CONFIRMED"].includes(b.status)
-        );
-        if (match) setUserBookingId(match.id);
-      }).catch(() => {});
-    });
+    let cancelled = false;
+    bookingApi.getMyBookings().then(bookings => {
+      if (cancelled) return;
+      const list = Array.isArray(bookings) ? bookings : bookings.bookings || [];
+      const match = list.find(b =>
+        String(b.hotel_id) === String(hotelId) && ["PAID", "CONFIRMED"].includes(b.status)
+      );
+      if (match) setUserBookingId(match.id);
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, [user, hotelId]);
 
   const stats = useMemo(() => {
