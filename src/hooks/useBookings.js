@@ -1,27 +1,33 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { bookingApi } from '../api/bookingApi';
 
 export function useBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await bookingApi.getMyBookings();
-      setBookings(Array.isArray(result) ? result : result.bookings || []);
-    } catch (err) {
-      setError(err.message || 'Đã có lỗi xảy ra');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+    let cancelled = false;
 
-  return { bookings, loading, error, refetch: fetchBookings };
+    async function fetchBookings() {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await bookingApi.getMyBookings();
+        if (!cancelled) setBookings(Array.isArray(result) ? result : result.bookings || []);
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Đã có lỗi xảy ra');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchBookings();
+    return () => { cancelled = true; };
+  }, [refreshKey]);
+
+  function refetch() { setRefreshKey((k) => k + 1); }
+
+  return { bookings, loading, error, refetch };
 }

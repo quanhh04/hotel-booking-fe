@@ -6,6 +6,7 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
+import DateInput from "../ui/DateInput";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { hotelApi } from "../../api/hotelApi";
@@ -212,11 +213,11 @@ export default function Booking() {
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-semibold text-slate-600">Ngày nhận phòng</label>
-                    <Input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="mt-1" />
+                    <DateInput value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="mt-1" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-slate-600">Ngày trả phòng</label>
-                    <Input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="mt-1" />
+                    <DateInput value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="mt-1" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-slate-600">Số khách</label>

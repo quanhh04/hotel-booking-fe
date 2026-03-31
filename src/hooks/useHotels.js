@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { hotelApi } from '../api/hotelApi';
 
 export function useHotels(filters) {
@@ -6,32 +6,35 @@ export function useHotels(filters) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const filtersRef = useRef(filters);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Track filter changes by serializing
+  // Serialize filters để detect thay đổi
   const filtersKey = JSON.stringify(filters);
 
-  const fetchHotels = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await hotelApi.getHotels(filtersRef.current);
-      setHotels(result.hotels || []);
-      setTotal(result.total || 0);
-    } catch (err) {
-      setError(err.message || 'Đã có lỗi xảy ra');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchHotels() {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await hotelApi.getHotels(filters);
+        if (!cancelled) {
+          setHotels(result.hotels || []);
+          setTotal(result.total || 0);
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Đã có lỗi xảy ra');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-  }, [filtersKey]);
 
-  useEffect(() => {
-    filtersRef.current = filters;
-  }, [filtersKey]);
-
-  useEffect(() => {
     fetchHotels();
-  }, [fetchHotels]);
+    return () => { cancelled = true; };
+  }, [filtersKey, refreshKey]);
 
-  return { hotels, total, loading, error, refetch: fetchHotels };
+  function refetch() { setRefreshKey((k) => k + 1); }
+
+  return { hotels, total, loading, error, refetch };
 }

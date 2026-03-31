@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import Card from "../ui/Card";
 import Input from "../ui/Input";
+import DateInput from "../ui/DateInput";
 import Button from "../ui/Button";
 import Spinner from "../ui/Spinner";
 import ErrorCard from "../ui/ErrorCard";
@@ -139,11 +140,11 @@ export default function Home() {
                   </div>
                   <div className="md:col-span-3">
                     <label className="text-xs font-semibold text-slate-600">Ngày nhận phòng</label>
-                    <Input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="mt-1" />
+                    <DateInput value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="mt-1" />
                   </div>
                   <div className="md:col-span-3">
                     <label className="text-xs font-semibold text-slate-600">Ngày trả phòng</label>
-                    <Input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="mt-1" />
+                    <DateInput value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="mt-1" />
                   </div>
                   <div className="md:col-span-1">
                     <label className="text-xs font-semibold text-slate-600">Khách</label>
