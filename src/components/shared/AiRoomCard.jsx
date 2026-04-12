@@ -2,15 +2,8 @@ import { Link } from "react-router-dom";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
 import { formatVND } from "../../utils/format";
-import { aiApi } from "../../api/aiApi";
 
 export default function AiRoomCard({ room, reason }) {
-  function onClick() {
-    if (room.room_id) {
-      aiApi.trackClick(room.room_id).catch(() => {});
-    }
-  }
-
   return (
     <Card className="p-3 hover:shadow-sm transition">
       <div className="flex flex-col h-full">
@@ -39,12 +32,8 @@ export default function AiRoomCard({ room, reason }) {
           <div className="mt-2 text-xs text-[#0071c2]">{reason}</div>
         )}
 
-        {room.percent_change != null && room.percent_change > 0 && (
-          <div className="mt-1 text-xs text-green-600 font-semibold">🔥 +{room.percent_change}% so với tuần trước</div>
-        )}
-
         <div className="mt-auto pt-3">
-          <Link to={`/hotels/${room.hotel_id || ""}`} onClick={onClick}>
+          <Link to={`/hotels/${room.hotel_id || ""}`}>
             <Button variant="primary" className="w-full text-xs">Xem khách sạn</Button>
           </Link>
         </div>

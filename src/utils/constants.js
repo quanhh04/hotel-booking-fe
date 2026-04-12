@@ -38,9 +38,6 @@ export const API_PATHS = {
   // AI
   AI_CHAT: `${P}/ai/chat`,
   AI_RECOMMENDATIONS: `${P}/ai/recommendations`,
-  AI_TRENDING: `${P}/ai/trending`,
-  AI_HISTORY_BASED: `${P}/ai/history-based`,
-  AI_TRACK_CLICK: `${P}/ai/track/click`,
 };
 
 export const BOOKING_STATUS_LABELS = {

@@ -44,7 +44,4 @@ export const adminApi = {
   // Inventory
   getHotelInventory: (hotelId) => httpClient.get(`${P}/hotels/${hotelId}/inventory`),
   updateInventory: (roomId, data) => httpClient.patch(`${P}/rooms/${roomId}/inventory`, data),
-
-  // AI Stats
-  getAiStats: (from, to) => httpClient.get(`${P}/ai/stats`, { from, to }),
 };

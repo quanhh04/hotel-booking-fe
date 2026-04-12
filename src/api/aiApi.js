@@ -7,13 +7,4 @@ export const aiApi = {
 
   getRecommendations: (params) =>
     httpClient.get(API_PATHS.AI_RECOMMENDATIONS, params),
-
-  getTrending: (days) =>
-    httpClient.get(API_PATHS.AI_TRENDING, { days }),
-
-  getHistoryBased: () =>
-    httpClient.get(API_PATHS.AI_HISTORY_BASED),
-
-  trackClick: (roomTypeId) =>
-    httpClient.post(API_PATHS.AI_TRACK_CLICK, { room_type_id: roomTypeId }),
 };
