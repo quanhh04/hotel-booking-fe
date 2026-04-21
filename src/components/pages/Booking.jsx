@@ -94,7 +94,6 @@ export default function Booking() {
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("pay_at_hotel");
   const [specialRequests, setSpecialRequests] = useState("");
-  const [agree, setAgree] = useState(false);
 
   // Flow
   const [step, setStep] = useState(1);
@@ -130,7 +129,6 @@ export default function Booking() {
     if (nights <= 0) return "Số đêm không hợp lệ.";
     if (!fullName.trim()) return "Vui lòng nhập họ và tên.";
     if (!email.trim()) return "Vui lòng nhập email.";
-    if (!agree) return "Vui lòng đồng ý với điều khoản để tiếp tục.";
     return "";
   }
 
@@ -267,12 +265,7 @@ export default function Booking() {
                     className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#0071c2] focus:ring-2 focus:ring-[#0071c2]/15"
                     placeholder="VD: phòng tầng cao, giường phụ..." />
                 </div>
-                <div className="mt-3 flex items-start gap-2">
-                  <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 h-4 w-4 accent-[#0071c2]" />
-                  <div className="text-sm text-slate-700">
-                    Tôi đồng ý với <span className="text-[#0071c2] font-semibold">điều khoản</span> và <span className="text-[#0071c2] font-semibold">chính sách</span>.
-                  </div>
-                </div>
+
               </Card>
               <div className="flex gap-2 justify-end">
                 <Button variant="primary" className="h-11 px-6" onClick={goStep2}>Tiếp tục</Button>

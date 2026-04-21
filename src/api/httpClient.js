@@ -53,7 +53,7 @@ async function handleResponse(res) {
   if (res.status === 401) {
     localStorage.removeItem(TOKEN_KEY);
     window.location.href = '/login';
-    throw new Error('Phiên đăng nhập đã hết hạn');
+    // throw new Error('Phiên đăng nhập đã hết hạn');
   }
 
   // Parse JSON body (có thể không có body)
