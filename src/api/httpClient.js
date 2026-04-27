@@ -1,33 +1,34 @@
+/**
+ * httpClient — Wrapper mỏng quanh fetch() để mọi API call dùng chung 1 chỗ.
+ *
+ * Trách nhiệm chính:
+ *   1. Tự gắn header `Authorization: Bearer <token>` nếu user đã đăng nhập.
+ *   2. Tự gắn `Content-Type: application/json` khi gửi body.
+ *   3. Tự build query string từ object params (bỏ giá trị rỗng).
+ *   4. Tự parse JSON, throw Error nếu response không OK.
+ *   5. Nếu nhận 401 → xoá token + chuyển về /login.
+ *
+ * Cách dùng:
+ *   httpClient.get('/api/hotels', { page: 1 })
+ *   httpClient.post('/api/bookings', { room_type_id: 1 })
+ */
+
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 const TOKEN_KEY = 'auth_token';
 
-/**
- * Lấy JWT token từ localStorage.
- */
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-/**
- * Tạo headers cho request.
- * - Nếu có body → thêm Content-Type: application/json
- * - Nếu có token → thêm Authorization: Bearer ...
- */
+// Build object headers cho mỗi request
 function buildHeaders(hasBody) {
   const headers = {};
   if (hasBody) headers['Content-Type'] = 'application/json';
 
-  const token = getToken();
+  const token = localStorage.getItem(TOKEN_KEY);
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   return headers;
 }
 
-/**
- * Chuyển object params thành query string.
- * Bỏ qua các giá trị undefined, null, rỗng.
- * Ví dụ: { page: 1, keyword: 'abc' } → '?page=1&keyword=abc'
- */
+// { page: 1, keyword: 'abc' } → '?page=1&keyword=abc'
+// Bỏ qua giá trị undefined / null / chuỗi rỗng để URL gọn.
 function buildQueryString(params) {
   if (!params || typeof params !== 'object') return '';
 
@@ -43,42 +44,26 @@ function buildQueryString(params) {
   return qs ? '?' + qs : '';
 }
 
-/**
- * Xử lý response từ server.
- * - 401 → xoá token, redirect về login
- * - Lỗi khác → throw error với message từ server
- */
+// Đọc body JSON + xử lý lỗi chung
 async function handleResponse(res) {
-  // Token hết hạn → đăng xuất
+  // 401 = token hết hạn / không hợp lệ → đăng xuất tự động
   if (res.status === 401) {
     localStorage.removeItem(TOKEN_KEY);
     window.location.href = '/login';
-    // throw new Error('Phiên đăng nhập đã hết hạn');
   }
 
-  // Parse JSON body (có thể không có body)
+  // Một số response (như DELETE 204) không có body
   let data = null;
-  try {
-    data = await res.json();
-  } catch {
-    // Response không có JSON body
-  }
+  try { data = await res.json(); } catch { /* no body */ }
 
-  // Nếu lỗi → throw error
   if (!res.ok) {
-    const message = (data && data.message) || `Lỗi ${res.status}`;
-    throw new Error(message);
+    throw new Error(data?.message || `Lỗi ${res.status}`);
   }
 
   return data;
 }
 
-/**
- * Gửi HTTP request.
- * @param {string} method - GET, POST, PUT, PATCH, DELETE
- * @param {string} url - Đường dẫn API (VD: /api/hotels)
- * @param {object} options - { body?, params? }
- */
+// Hàm lõi: thực hiện 1 HTTP request bất kỳ
 async function request(method, url, { body, params } = {}) {
   const hasBody = body !== undefined && body !== null;
   const fullUrl = BASE_URL + url + buildQueryString(params);
@@ -91,24 +76,19 @@ async function request(method, url, { body, params } = {}) {
       body: hasBody ? JSON.stringify(body) : undefined,
     });
   } catch {
+    // Lỗi network (mất mạng, server down,...)
     throw new Error('Không thể kết nối đến server');
   }
 
   return handleResponse(res);
 }
 
-/**
- * HTTP client — wrapper gọn cho fetch API.
- *
- * Cách dùng:
- *   httpClient.get('/api/hotels', { page: 1 })
- *   httpClient.post('/api/bookings', { room_type_id: 1, check_in: '...' })
- */
+// Public API — 5 hàm tiện dụng cho 5 method HTTP phổ biến
 const httpClient = {
-  get:   (url, params) => request('GET', url, { params }),
-  post:  (url, body)   => request('POST', url, { body }),
-  put:   (url, body)   => request('PUT', url, { body }),
-  patch: (url, body)   => request('PATCH', url, { body }),
+  get:   (url, params) => request('GET',    url, { params }),
+  post:  (url, body)   => request('POST',   url, { body }),
+  put:   (url, body)   => request('PUT',    url, { body }),
+  patch: (url, body)   => request('PATCH',  url, { body }),
   del:   (url)         => request('DELETE', url),
 };
 

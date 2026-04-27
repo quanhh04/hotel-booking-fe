@@ -1,32 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useFetch } from './useFetch';
 import { aiApi } from '../api/aiApi';
 
+/**
+ * Lấy danh sách phòng AI gợi ý dựa trên params (guests, max_price, amenities,...).
+ * BE trả thẳng mảng phòng.
+ */
 export function useAiRecommendations(params) {
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const key = JSON.stringify(params);
 
-  const depsKey = JSON.stringify([params?.guests, params?.max_price, params?.amenities, params?.limit]);
+  const { data, loading, error } = useFetch(
+    () => aiApi.getRecommendations(params),
+    [key]
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetch() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await aiApi.getRecommendations(params);
-        if (!cancelled) setRooms(Array.isArray(res) ? res : []);
-      } catch (err) {
-        if (!cancelled) setError(err.message || 'Không thể tải gợi ý');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    fetch();
-    return () => { cancelled = true; };
-  }, [depsKey]);
-
-  return { rooms, loading, error };
+  return {
+    rooms: Array.isArray(data) ? data : [],
+    loading,
+    error,
+  };
 }
