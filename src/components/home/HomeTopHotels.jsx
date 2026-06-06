@@ -7,13 +7,10 @@ import ErrorCard from "../ui/ErrorCard";
 import { useHotels } from "../../hooks/useHotels";
 import { formatVND } from "../../utils/format";
 
-/**
- * Section "Chỗ nghỉ được đánh giá cao" — top 4 khách sạn theo rating giảm dần.
- */
 export default function HomeTopHotels() {
   const navigate = useNavigate();
 
-  // useMemo để filters object không bị tạo mới mỗi render → hook không fetch lại liên tục
+  // Stable filters ref
   const filters = useMemo(() => ({ sort_by: "rating", sort_order: "DESC", limit: 4 }), []);
   const { hotels, loading, error, refetch } = useHotels(filters);
 

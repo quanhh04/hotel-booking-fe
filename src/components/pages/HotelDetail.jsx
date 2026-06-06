@@ -16,18 +16,6 @@ import HotelRoomsTable from "../hotel/HotelRoomsTable";
 import HotelPriceSidebar from "../hotel/HotelPriceSidebar";
 import { formatVND } from "../../utils/format";
 
-/**
- * Trang chi tiết khách sạn.
- *
- * Bố cục:
- *   - Header: tên, địa chỉ, sao, rating
- *   - 3 highlight nhỏ
- *   - Gallery (5 ảnh) + modal xem tất cả
- *   - LEFT: Tổng quan + Bảng phòng
- *   - RIGHT: Sidebar giá + Reviews
- */
-
-// Quy ước nhãn theo điểm rating của Booking
 function getLabelByRating(rating) {
   if (rating >= 9)   return "Tuyệt hảo";
   if (rating >= 8.5) return "Rất tốt";
@@ -43,8 +31,6 @@ export default function HotelDetail() {
 
   const { hotel, rooms, loading, error } = useHotelDetail(id);
 
-  // BE có thể trả mảng string hoặc mảng object {id, url} → chuẩn hoá thành mảng URL.
-  // Phải gọi useMemo TRƯỚC mọi early return để tuân thủ Rules of Hooks.
   const imageList = useMemo(() => {
     if (!hotel?.images?.length) return [];
     return hotel.images.map((img) => (typeof img === "string" ? img : img.url));
@@ -81,7 +67,6 @@ export default function HotelDetail() {
 
   const ratingLabel = getLabelByRating(Number(hotel.rating || 0));
 
-  // Đọc lại param tìm kiếm từ Home để hiển thị thông tin chuyến đi
   const searchInfo = {
     checkIn:  sp.get("checkIn"),
     checkOut: sp.get("checkOut"),

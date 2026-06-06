@@ -2,27 +2,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "../api/authApi";
 
-/**
- * AuthContext — Quản lý trạng thái đăng nhập GLOBAL cho cả app.
- *
- * Nguyên tắc:
- *   - Token JWT lưu trong localStorage (key = "auth_token") để giữ giữa các lần mở app.
- *   - Khi app khởi động: nếu có token → gọi /auth/me để xác minh và lấy thông tin user.
- *   - login()/register() đều: lưu token → gọi /auth/me → set user.
- *   - logout(): xoá token + set user = null.
- *
- * Cách dùng trong component:
- *   const { user, login, logout, loading } = useAuth();
- */
-
 const TOKEN_KEY = "auth_token";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // true khi đang xác minh token lúc mở app
+  const [loading, setLoading] = useState(true);
 
-  // Khi component mount: nếu có token sẵn trong localStorage thì gọi /auth/me xác minh.
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -32,11 +18,10 @@ export function AuthProvider({ children }) {
 
     authApi.getMe()
       .then((me) => setUser(me))
-      .catch(() => localStorage.removeItem(TOKEN_KEY)) // token hỏng → xoá
+      .catch(() => localStorage.removeItem(TOKEN_KEY))
       .finally(() => setLoading(false));
   }, []);
 
-  // Hàm chung cho cả login và register: nhận token → lưu → load user
   async function saveTokenAndLoadUser(token) {
     localStorage.setItem(TOKEN_KEY, token);
     const me = await authApi.getMe();

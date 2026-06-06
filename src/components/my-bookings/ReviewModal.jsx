@@ -3,14 +3,6 @@ import Button from "../ui/Button";
 import { useToast } from "../../contexts/ToastContext";
 import { reviewApi } from "../../api/reviewApi";
 
-/**
- * Popup viết / sửa đánh giá cho 1 booking.
- *
- * - Tạo mới: rating mặc định 8, comment rỗng.
- * - Sửa:    pre-fill rating + comment từ review cũ (`existingReview`).
- *
- * Khi gửi thành công → gọi onSuccess() để cha refetch dữ liệu, rồi tự đóng.
- */
 export default function ReviewModal({ open, onClose, booking, existingReview, onSuccess }) {
   const [rating, setRating]       = useState(8);
   const [comment, setComment]     = useState("");
@@ -20,7 +12,6 @@ export default function ReviewModal({ open, onClose, booking, existingReview, on
 
   const isEditing = !!existingReview;
 
-  // Reset form mỗi lần modal mở (để không giữ lại dữ liệu cũ giữa các lần mở)
   useEffect(() => {
     if (open) {
       setRating(existingReview?.rating ?? 8);

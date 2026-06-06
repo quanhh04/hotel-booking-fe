@@ -3,10 +3,6 @@ import Container from "../ui/Container";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 
-/**
- * Form đăng ký nhận email ưu đãi (chỉ là demo, chưa gọi API).
- * Validate đơn giản bằng regex email.
- */
 export default function HomeNewsletter() {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");

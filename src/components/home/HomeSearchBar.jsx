@@ -3,11 +3,6 @@ import Input from "../ui/Input";
 import DateInput from "../ui/DateInput";
 import Button from "../ui/Button";
 
-/**
- * Thanh tìm kiếm khách sạn ở trang chủ.
- * Tất cả state (city, checkIn, checkOut, guests) đặt ở component cha
- * vì còn dùng cho "Tìm kiếm nhanh" theo điểm đến.
- */
 export default function HomeSearchBar({
   city, setCity,
   checkIn, setCheckIn,

@@ -4,15 +4,6 @@ import Button from "../ui/Button";
 import BookingStatusBadge from "./BookingStatusBadge";
 import { formatVND, formatDate, formatDateTime } from "../../utils/format";
 
-/**
- * 1 thẻ trong lịch sử đặt phòng — hiển thị thông tin + các nút hành động.
- *
- * Các action có thể có (tuỳ trạng thái đơn):
- *   - Xem khách sạn  (luôn có nếu booking còn hotel_id)
- *   - Thanh toán      (PENDING + payment_method=online)
- *   - Huỷ đơn         (PENDING / CONFIRMED)
- *   - Đánh giá / Sửa  (CONFIRMED / PAID — sau khi đã ở/đang ở khách sạn)
- */
 export default function BookingHistoryCard({
   booking: b,
   review,

@@ -5,10 +5,6 @@ import { useFetch } from "../../hooks/useFetch";
 import { cityApi } from "../../api/cityApi";
 import { formatVND } from "../../utils/format";
 
-/**
- * Section "Khám phá Việt Nam" — Lưới các thành phố (lấy 6 cái).
- * Dữ liệu từ /api/cities (BE trả { cities: [...] } hoặc thẳng mảng).
- */
 export default function HomeDestinations({ onPick }) {
   const { data, loading, error, refetch } = useFetch(
     () => cityApi.getCities(6),

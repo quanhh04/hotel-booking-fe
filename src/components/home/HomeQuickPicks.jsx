@@ -1,9 +1,5 @@
 import Card from "../ui/Card";
 
-/**
- * 3 thẻ "Gợi ý theo phong cách du lịch".
- * Bấm vào → set city + chuyển sang trang /hotels.
- */
 export default function HomeQuickPicks({ onPick }) {
   const picks = [
     { city: "Đà Nẵng",         title: "Gần biển, nhiều resort",  hint: "Đà Nẵng • Hội An • Nha Trang" },

@@ -2,24 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { notificationApi } from "../../api/notificationApi";
 import { formatDateTime } from "../../utils/format";
 
-/**
- * Chuông thông báo ở header.
- *
- * Tính năng:
- *   - Tự fetch danh sách thông báo + số lượng chưa đọc khi mount.
- *   - Polling mỗi 30s để cập nhật thông báo mới.
- *   - Click ra ngoài → đóng popup (dùng ref + listener mousedown).
- *   - Click 1 thông báo chưa đọc → mark-as-read.
- *   - Nút "Đọc tất cả" → mark-all-as-read.
- */
 export default function NotificationBell() {
   const [open, setOpen]             = useState(false);
   const [notifs, setNotifs]         = useState([]);
   const [unread, setUnread]         = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0); // tăng để buộc fetch lại
+  const [refreshKey, setRefreshKey] = useState(0);
   const ref = useRef(null);
 
-  // Fetch + polling 30s. refreshKey thay đổi → fetch ngay.
   useEffect(() => {
     let cancelled = false;
 
@@ -38,7 +27,6 @@ export default function NotificationBell() {
     return () => { cancelled = true; clearInterval(timer); };
   }, [refreshKey]);
 
-  // Click ra ngoài popup → đóng
   useEffect(() => {
     function onClickOutside(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);

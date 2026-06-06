@@ -16,25 +16,15 @@ import ReviewModal from "../my-bookings/ReviewModal";
 
 /**
  * Trang lịch sử đặt phòng của user.
- *
- * Component này quản lý:
- *   - Danh sách bookings  (qua hook useBookings)
- *   - Danh sách reviews user đã viết (để biết booking nào "đã đánh giá")
- *   - State đang thanh toán / đang huỷ / đang mở popup đánh giá
- *
- * Các thao tác (cancel/pay/review) đều chỉ refetch dữ liệu, KHÔNG tự update local
- * → đảm bảo dữ liệu luôn khớp với BE.
  */
 export default function MyBookings() {
   const { bookings, loading, error, refetch } = useBookings();
   const toast = useToast();
 
-  // State cho từng action — lưu booking-id đang xử lý để hiện text "Đang xử lý..."
   const [cancelling, setCancelling]       = useState(null);
   const [paying, setPaying]               = useState(null);
   const [reviewBooking, setReviewBooking] = useState(null);
 
-  // Lấy review của user để biết booking nào đã đánh giá rồi
   const [myReviews, setMyReviews] = useState([]);
 
   function fetchReviews() {
@@ -49,7 +39,6 @@ export default function MyBookings() {
     return myReviews.find((r) => r.booking_id === bookingId) || null;
   }
 
-  // Sau khi gửi/sửa review thành công → refetch cả 2 danh sách
   function onReviewSuccess() {
     refetch();
     fetchReviews();
@@ -90,7 +79,6 @@ export default function MyBookings() {
     return <Container className="py-6"><ErrorCard message={error} onRetry={refetch} /></Container>;
   }
 
-  // Review của booking đang mở popup (để pre-fill khi sửa)
   const existingReview = reviewBooking ? getReviewForBooking(reviewBooking.id) : null;
 
   return (

@@ -1,9 +1,5 @@
 import { useRef, useState } from "react";
 
-/**
- * DateInput hiển thị dd/mm/yyyy, cho phép nhập tay hoặc chọn từ calendar.
- * value/onChange vẫn dùng format yyyy-mm-dd (ISO) để gửi API.
- */
 export default function DateInput({ value, onChange, className = "", ...props }) {
   const nativeRef = useRef(null);
   const [text, setText] = useState("");
@@ -54,7 +50,6 @@ export default function DateInput({ value, onChange, className = "", ...props })
     onChange({ target: { value: iso } });
   }
 
-  // Hiển thị: nếu đang gõ thì dùng text, nếu không thì dùng value prop
   const displayText = document.activeElement?.dataset?.dateText ? text : (text || toDisplay(value));
 
   return (

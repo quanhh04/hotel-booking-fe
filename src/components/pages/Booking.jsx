@@ -17,17 +17,6 @@ import BookingConfirmStep from "../booking/BookingConfirmStep";
 import BookingSummary from "../booking/BookingSummary";
 import BookingSuccess from "../booking/BookingSuccess";
 
-/**
- * Page Booking — Quy trình đặt phòng theo 3 bước:
- *   Bước 1 (BookingTripStep):    Form nhập ngày + thông tin user + thanh toán
- *   Bước 2 (BookingReviewStep):  Xem lại trước khi gửi
- *   Bước 3 (BookingConfirmStep): Bấm xác nhận → gọi API tạo booking
- *   → Thành công: BookingSuccess
- *
- * Component này chỉ làm "orchestrator": giữ toàn bộ STATE chung và chuyển bước.
- * UI thực tế nằm trong các sub-component ở `components/booking/`.
- */
-
 function calcNights(checkIn, checkOut) {
   if (!checkIn || !checkOut) return 0;
   const ms = new Date(checkOut).getTime() - new Date(checkIn).getTime();
@@ -41,18 +30,15 @@ export default function Booking() {
   const { user } = useAuth();
   const toast = useToast();
 
-  // 1. Load hotel + rooms từ BE qua hook chung
   const { hotel, rooms, loading: pageLoading, error: pageError } = useHotelDetail(id);
 
-  // 2. Xác định phòng được chọn từ query string `?roomId=...`
-  //    Nếu không có hoặc id không khớp → mặc định phòng đầu tiên.
   const roomIdFromQuery = sp.get("roomId") || sp.get("room") || "";
   const room = useMemo(() => {
     if (!rooms.length) return null;
     return rooms.find((r) => String(r.id) === String(roomIdFromQuery)) || rooms[0];
   }, [rooms, roomIdFromQuery]);
 
-  // 3. State của form — pre-fill từ query string + thông tin user
+  // Form state
   const [checkIn, setCheckIn]   = useState(sp.get("checkIn")  || "");
   const [checkOut, setCheckOut] = useState(sp.get("checkOut") || "");
   const [guests, setGuests]     = useState(Number(sp.get("guests") || 2));
@@ -62,12 +48,11 @@ export default function Booking() {
   const [paymentMethod, setPaymentMethod]     = useState("pay_at_hotel");
   const [specialRequests, setSpecialRequests] = useState("");
 
-  // 4. State của luồng (bước hiện tại + đang submit + id đơn vừa tạo)
+  // Flow state
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [successId, setSuccessId] = useState("");
 
-  // === Các trạng thái loading / error / không tìm thấy ===
   if (pageLoading) {
     return <Container className="py-10"><Spinner text="Đang tải thông tin đặt phòng..." /></Container>;
   }
@@ -85,12 +70,10 @@ export default function Booking() {
     );
   }
 
-  // === Các giá trị tính toán hiển thị ===
   const nights         = calcNights(checkIn, checkOut);
   const pricePerNight  = Number(room?.price_per_night || room?.price || hotel.price_from || 0);
   const total          = pricePerNight * Math.max(1, nights);
 
-  // === Validate trước khi sang bước 2 ===
   function validateStep1() {
     if (!checkIn || !checkOut)         return "Vui lòng chọn ngày nhận/trả phòng.";
     if (checkOut < checkIn)            return "Ngày trả phòng phải sau ngày nhận phòng.";
@@ -106,7 +89,6 @@ export default function Booking() {
     setStep(2);
   }
 
-  // === Gọi API tạo booking ===
   async function onConfirm() {
     setSubmitting(true);
     try {
@@ -124,12 +106,10 @@ export default function Booking() {
     }
   }
 
-  // === Đặt thành công → hiện màn cảm ơn ===
   if (successId) {
     return <BookingSuccess bookingId={successId} paymentMethod={paymentMethod} hotel={hotel} />;
   }
 
-  // === Render: header + 3 bước (luân phiên theo `step`) + sidebar tóm tắt ===
   return (
     <Container className="py-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
