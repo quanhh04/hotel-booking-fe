@@ -5,31 +5,97 @@ import { useAuth } from "../../contexts/AuthContext";
 import { formatVND } from "../../utils/format";
 
 const QUICK_REPLIES = [
-  "Tìm phòng ở Đà Nẵng",
+  "Tìm phòng ở Hà Nội",
   "Phòng giá dưới 2 triệu",
-  "Khách sạn 5 sao Phú Quốc",
+  "Khách sạn 5 sao Hà Nội",
   "Gợi ý phòng cho 2 người",
 ];
 
-function RoomCard({ room }) {
-  return (
-    <Link
-      to={`/hotels/${room.hotel_id || ""}`}
-      className="flex items-center gap-2 rounded-lg border border-slate-200 p-2 mt-1 hover:border-[#0071c2] hover:bg-blue-50/30 transition text-left group"
-    >
-      <div className="h-10 w-10 rounded-md bg-[#003580]/10 flex items-center justify-center shrink-0">
-        <span className="text-base">🏨</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-slate-900 text-xs truncate group-hover:text-[#0071c2]">{room.room_name || room.name}</div>
-        <div className="text-xs text-slate-500 truncate">{room.hotel_name}</div>
-        <div className="text-xs text-slate-600 mt-0.5">
-          {room.price_per_night ? <span className="font-semibold">{formatVND(room.price_per_night)}</span> : ""}
-          {room.max_guests ? <span className="text-slate-400"> • {room.max_guests} khách</span> : ""}
+const UPSELL_REPLIES = [
+  "Tôi cần đặt xe đưa đón sân bay",
+  "Tôi muốn thuê xe trong mấy ngày đó",
+  "Gợi ý thêm địa điểm tham quan",
+  "Không, cảm ơn!",
+];
+
+/** Render markdown nhẹ: **bold**, *italic*, bullet lists */
+function renderMarkdown(text) {
+  if (!text) return null;
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    // Bullet list: * item hoặc - item
+    const bulletMatch = line.match(/^\s*[\*\-]\s+(.+)/);
+    if (bulletMatch) {
+      return (
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-slate-400 shrink-0">•</span>
+          <span>{formatInline(bulletMatch[1])}</span>
         </div>
-      </div>
-      <svg className="h-4 w-4 text-slate-300 group-hover:text-[#0071c2] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-    </Link>
+      );
+    }
+    // Empty line
+    if (!line.trim()) return <div key={i} className="h-1.5" />;
+    // Normal line
+    return <div key={i}>{formatInline(line)}</div>;
+  });
+}
+
+/** Format inline: **bold** and *italic* */
+function formatInline(text) {
+  const parts = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining) {
+    // Bold: **text**
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    if (boldMatch) {
+      const idx = remaining.indexOf(boldMatch[0]);
+      if (idx > 0) parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>);
+      parts.push(<strong key={key++} className="font-semibold">{boldMatch[1]}</strong>);
+      remaining = remaining.slice(idx + boldMatch[0].length);
+      continue;
+    }
+    // No more matches
+    parts.push(<span key={key++}>{remaining}</span>);
+    break;
+  }
+
+  return parts.length === 1 ? parts[0] : <>{parts}</>;
+}
+
+function RoomCard({ room, onSelect }) {
+  const hasValidHotelId = room.hotel_id && room.hotel_id !== "";
+
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-slate-200 p-2 mt-1 hover:border-[#0071c2] hover:bg-blue-50/30 transition text-left group">
+      <Link
+        to={hasValidHotelId ? `/hotels/${room.hotel_id}` : "#"}
+        className="flex items-center gap-2 flex-1 min-w-0"
+      >
+        <div className="h-10 w-10 rounded-md bg-[#003580]/10 flex items-center justify-center shrink-0">
+          <span className="text-base">🏨</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-slate-900 text-xs truncate group-hover:text-[#0071c2]">
+            {room.room_name || room.name || "Phòng"}
+          </div>
+          <div className="text-xs text-slate-500 truncate">{room.hotel_name || ""}</div>
+          <div className="text-xs text-slate-600 mt-0.5">
+            {room.price_per_night ? <span className="font-semibold">{formatVND(room.price_per_night)}</span> : ""}
+            {room.max_guests ? <span className="text-slate-400"> • {room.max_guests} khách</span> : ""}
+          </div>
+        </div>
+      </Link>
+      {onSelect && (
+        <button
+          onClick={() => onSelect(room)}
+          className="text-[10px] px-2 py-1 rounded-md bg-[#003580] text-white hover:bg-[#00256b] shrink-0 transition"
+        >
+          Đặt
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -51,9 +117,14 @@ export default function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const { user } = useAuth();
-  const { messages, loading, send, clear } = useAiChat();
+  const { messages, loading, send, clear, setMounted } = useAiChat();
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, [setMounted]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,6 +146,17 @@ export default function AiChatWidget() {
     send(text);
   }
 
+  function onSelectRoom(room) {
+    if (loading) return;
+    const name = room.room_name || room.name || "phòng đầu tiên";
+    send(`Cho tôi đặt phòng "${name}" tại ${room.hotel_name || "khách sạn này"}`);
+  }
+
+  // Kiểm tra tin nhắn cuối có booking hay rooms để hiện quick replies phù hợp
+  const lastBotMsg = [...messages].reverse().find(m => m.role === "bot");
+  const hasBooking = lastBotMsg?.booking;
+  const hasRooms = lastBotMsg?.rooms?.length > 0 && !hasBooking;
+
   return (
     <>
       {/* FAB */}
@@ -88,10 +170,14 @@ export default function AiChatWidget() {
         aria-label={open ? "Đóng trợ lý AI" : "Mở trợ lý AI"}
       >
         {open ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         ) : (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
             {messages.length === 0 && (
               <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-[#febb02] border-2 border-white" />
             )}
@@ -116,7 +202,10 @@ export default function AiChatWidget() {
                 </div>
               </div>
               <button onClick={clear} className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg transition" title="Xoá lịch sử chat">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
               </button>
             </div>
           </div>
@@ -126,11 +215,12 @@ export default function AiChatWidget() {
             {messages.length === 0 && (
               <div className="text-center py-6">
                 <div className="text-3xl mb-3">👋</div>
-                <div className="text-sm font-semibold text-slate-700">Xin chào{user ? ` ${user.display_name || ''}` : ''}!</div>
+                <div className="text-sm font-semibold text-slate-700">
+                  Xin chào{user ? ` ${user.display_name || ""}` : ""}!
+                </div>
                 <div className="text-xs text-slate-500 mt-1 max-w-[240px] mx-auto">
                   Tôi có thể giúp bạn tìm phòng, so sánh giá, hoặc đặt phòng trực tiếp.
                 </div>
-                {/* Quick replies */}
                 <div className="mt-4 flex flex-wrap gap-1.5 justify-center">
                   {QUICK_REPLIES.map((q) => (
                     <button
@@ -155,9 +245,18 @@ export default function AiChatWidget() {
                 <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                   msg.role === "user"
                     ? "bg-[#003580] text-white rounded-br-md"
-                    : "bg-white text-slate-800 shadow-sm border border-slate-100 rounded-bl-md"
+                    : msg.isError
+                      ? "bg-red-50 text-red-700 shadow-sm border border-red-200 rounded-bl-md"
+                      : "bg-white text-slate-800 shadow-sm border border-slate-100 rounded-bl-md"
                 }`}>
-                  <div className="whitespace-pre-line">{msg.content}</div>
+                  {/* Render markdown cho bot, plain text cho user */}
+                  {msg.role === "bot" ? (
+                    <div className="space-y-0.5">{renderMarkdown(msg.content)}</div>
+                  ) : (
+                    <div className="whitespace-pre-line">{msg.content}</div>
+                  )}
+
+                  {/* Booking success card */}
                   {msg.booking && (
                     <Link
                       to="/me/bookings"
@@ -170,16 +269,33 @@ export default function AiChatWidget() {
                       </div>
                     </Link>
                   )}
+
+                  {/* Room cards với nút Đặt */}
                   {msg.rooms?.length > 0 && (
                     <div className="mt-2 space-y-1.5">
                       {msg.rooms.slice(0, 5).map((r, j) => (
-                        <RoomCard key={r.room_id || j} room={r} />
+                        <RoomCard key={r.room_id || r.id || j} room={r} onSelect={onSelectRoom} />
                       ))}
                     </div>
                   )}
                 </div>
               </div>
             ))}
+
+            {/* Quick replies sau khi có booking (upsell) */}
+            {!loading && hasBooking && (
+              <div className="flex flex-wrap gap-1.5 justify-center pt-2">
+                {UPSELL_REPLIES.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => onQuickReply(q)}
+                    className="text-[11px] px-2.5 py-1.5 rounded-full border border-[#febb02]/50 text-[#003580] bg-[#febb02]/10 hover:bg-[#febb02]/30 transition"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {loading && <TypingIndicator />}
             <div ref={bottomRef} />
@@ -193,7 +309,7 @@ export default function AiChatWidget() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Nhập tin nhắn..."
+                placeholder={loading ? "Đang xử lý..." : "Nhập tin nhắn..."}
                 className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-[#0071c2] focus:bg-white focus:ring-2 focus:ring-[#0071c2]/10 transition placeholder:text-slate-400"
                 disabled={loading}
               />
@@ -202,7 +318,9 @@ export default function AiChatWidget() {
                 disabled={loading || !input.trim()}
                 className="h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0 active:scale-95 bg-[#003580] text-white hover:bg-[#00256b] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
               </button>
             </form>
             <div className="text-center mt-1.5">
