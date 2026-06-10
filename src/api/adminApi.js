@@ -44,4 +44,10 @@ export const adminApi = {
   // Inventory
   getHotelInventory: (hotelId) => httpClient.get(`${P}/hotels/${hotelId}/inventory`),
   updateInventory: (roomId, data) => httpClient.patch(`${P}/rooms/${roomId}/inventory`, data),
+
+  // Nearby Services CRUD
+  getNearbyServices: (params) => httpClient.get(`${P}/nearby-services`, params),
+  createNearbyService: (data) => httpClient.post(`${P}/nearby-services`, data),
+  updateNearbyService: (id, data) => httpClient.put(`${P}/nearby-services/${id}`, data),
+  deleteNearbyService: (id) => httpClient.del(`${P}/nearby-services/${id}`),
 };

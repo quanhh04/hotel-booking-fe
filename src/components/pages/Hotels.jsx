@@ -14,10 +14,9 @@ import AiRoomCard from "../shared/AiRoomCard";
 
 const SORT_MAP = {
   popular: {},
-  price_asc: { sort_by: "price", sort_order: "ASC" },
-  price_desc: { sort_by: "price", sort_order: "DESC" },
+  price_asc: { sort_by: "price_from", sort_order: "ASC" },
+  price_desc: { sort_by: "price_from", sort_order: "DESC" },
   rating_desc: { sort_by: "rating", sort_order: "DESC" },
-  reviews_desc: { sort_by: "reviews", sort_order: "DESC" },
 };
 
 export default function Hotels() {
@@ -34,7 +33,6 @@ export default function Hotels() {
     stars: [],
     minRating: "0",
     amenities: [],
-    propertyTypes: [],
   });
 
   const [sort, setSort] = useState("popular");
@@ -46,6 +44,7 @@ export default function Hotels() {
     if (filters.minPrice) params.min_price = filters.minPrice;
     if (filters.maxPrice) params.max_price = filters.maxPrice;
     if (filters.stars?.length) params.stars = filters.stars.join(",");
+    if (filters.minRating && filters.minRating !== "0") params.min_rating = filters.minRating;
 
     const sortConfig = SORT_MAP[sort] || {};
     if (sortConfig.sort_by) params.sort_by = sortConfig.sort_by;
@@ -53,7 +52,7 @@ export default function Hotels() {
 
     params.limit = 50;
     return params;
-  }, [filters.city, filters.minPrice, filters.maxPrice, filters.stars, sort]);
+  }, [filters.city, filters.minPrice, filters.maxPrice, filters.stars, filters.minRating, sort]);
 
   const { hotels, total, loading, error, refetch } = useHotels(apiParams);
 
@@ -66,7 +65,7 @@ export default function Hotels() {
   }, [filters.maxPrice, filters.amenities]);
   const { rooms: aiRooms, loading: aiLoading } = useAiRecommendations(aiParams);
 
-  // Sidebar options (hardcoded since we no longer have mock data to derive from)
+  // Sidebar options
   const options = useMemo(() => ({
     starOptions: [2, 3, 4, 5],
     ratingOptions: [
@@ -76,12 +75,7 @@ export default function Hotels() {
       { value: "9", label: "9+ (Tuyệt hảo)" },
     ],
     amenityOptions: ["WiFi miễn phí", "Hồ bơi", "Bãi đậu xe", "Nhà hàng", "Phòng gym", "Spa", "Điều hoà", "Lễ tân 24/7"],
-    propertyTypeOptions: ["Khách sạn", "Resort", "Nhà nghỉ", "Căn hộ"],
   }), []);
-
-  function onApply() {
-    // Filters are already reactive via apiParams
-  }
 
   function onReset() {
     setFilters({
@@ -91,7 +85,6 @@ export default function Hotels() {
       stars: [],
       minRating: "0",
       amenities: [],
-      propertyTypes: [],
     });
     setSort("popular");
   }
@@ -112,7 +105,6 @@ export default function Hotels() {
               filters={filters}
               setFilters={setFilters}
               options={options}
-              onApply={onApply}
               onReset={onReset}
             />
           </div>

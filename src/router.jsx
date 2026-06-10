@@ -20,6 +20,7 @@ import AdminUsers from "./components/admin/AdminUsers";
 import AdminCities from "./components/admin/AdminCities";
 import AdminPayments from "./components/admin/AdminPayments";
 import AdminReviews from "./components/admin/AdminReviews";
+import AdminNearbyServices from "./components/admin/AdminNearbyServices";
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
       { path: "cities", element: <AdminCities /> },
       { path: "payments", element: <AdminPayments /> },
       { path: "reviews", element: <AdminReviews /> },
+      { path: "nearby-services", element: <AdminNearbyServices /> },
     ],
   },
 ]);

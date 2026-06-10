@@ -8,4 +8,7 @@ export const hotelApi = {
 
   getHotelRooms: (id, page, limit) =>
     httpClient.get(API_PATHS.HOTEL_ROOMS(id), { page, limit }),
+
+  getNearbyServices: (id, params) =>
+    httpClient.get(API_PATHS.HOTEL_NEARBY_SERVICES(id), params),
 };

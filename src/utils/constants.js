@@ -13,6 +13,7 @@ export const API_PATHS = {
   HOTELS: `${P}/hotels`,
   HOTEL_DETAIL: (id) => `${P}/hotels/${id}`,
   HOTEL_ROOMS: (id) => `${P}/hotels/${id}/rooms`,
+  HOTEL_NEARBY_SERVICES: (id) => `${P}/hotels/${id}/nearby-services`,
 
   // Cities
   CITIES: `${P}/cities`,

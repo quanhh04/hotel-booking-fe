@@ -11,6 +11,7 @@ const NAV = [
   { to: "/admin/cities", label: "Thành phố", icon: "🏙️" },
   { to: "/admin/payments", label: "Thanh toán", icon: "💳" },
   { to: "/admin/reviews", label: "Đánh giá", icon: "⭐" },
+  { to: "/admin/nearby-services", label: "Dịch vụ lân cận", icon: "🗺️" },
 ];
 
 export default function AdminLayout() {

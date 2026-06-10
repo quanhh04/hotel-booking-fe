@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
+import NearbyServices from "./NearbyServices";
 
 /**
  * Màn hình hiển thị sau khi đặt phòng thành công.
  * - Nếu thanh toán online: nhắc user đi tới trang thanh toán.
  * - Nếu trả tại khách sạn: chỉ cần xem lịch sử.
+ * - Hiển thị dịch vụ lân cận khách sạn (After Booking feature).
  */
 export default function BookingSuccess({ bookingId, paymentMethod, hotel }) {
   return (
@@ -34,6 +36,9 @@ export default function BookingSuccess({ bookingId, paymentMethod, hotel }) {
           <Link to={`/hotels/${hotel.id}`}><Button variant="secondary">Quay lại khách sạn</Button></Link>
         </div>
       </Card>
+
+      {/* After Booking — Khám phá khu vực */}
+      {hotel?.id && <NearbyServices hotelId={hotel.id} />}
     </Container>
   );
 }

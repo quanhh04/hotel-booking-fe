@@ -12,10 +12,12 @@ const QUICK_REPLIES = [
 ];
 
 const UPSELL_REPLIES = [
-  "Tôi cần đặt xe đưa đón sân bay",
-  "Tôi muốn thuê xe trong mấy ngày đó",
-  "Gợi ý thêm địa điểm tham quan",
-  "Không, cảm ơn!",
+  { text: "🍜 Ăn uống quanh đây", message: "Gợi ý nhà hàng và quán ăn ngon gần khách sạn tôi vừa đặt" },
+  { text: "🏛️ Địa điểm tham quan", message: "Gợi ý địa điểm tham quan, du lịch tâm linh gần khách sạn" },
+  { text: "🧘 Spa & Wellness", message: "Có spa hoặc dịch vụ massage nào gần khách sạn không?" },
+  { text: "🚗 Đặt xe đưa đón sân bay", message: "Tôi cần đặt xe đưa đón sân bay, có dịch vụ nào không?" },
+  { text: "🌙 Nightlife & Bar", message: "Gợi ý quán bar, nightlife gần khách sạn tôi đặt" },
+  { text: "🗺️ Xem trên Google Maps", message: "Cho tôi link Google Maps đến khách sạn tôi vừa đặt" },
 ];
 
 /** Render markdown nhẹ: **bold**, *italic*, bullet lists */
@@ -40,13 +42,33 @@ function renderMarkdown(text) {
   });
 }
 
-/** Format inline: **bold** and *italic* */
+/** Format inline: **bold**, *italic*, and [links](url) */
 function formatInline(text) {
   const parts = [];
   let remaining = text;
   let key = 0;
 
   while (remaining) {
+    // Link: [text](url)
+    const linkMatch = remaining.match(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/);
+    if (linkMatch) {
+      const idx = remaining.indexOf(linkMatch[0]);
+      if (idx > 0) parts.push(<span key={key++}>{formatBold(remaining.slice(0, idx))}</span>);
+      parts.push(
+        <a
+          key={key++}
+          href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#0071c2] underline underline-offset-2 hover:text-[#003580] transition"
+        >
+          {linkMatch[1]}
+        </a>
+      );
+      remaining = remaining.slice(idx + linkMatch[0].length);
+      continue;
+    }
+
     // Bold: **text**
     const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
     if (boldMatch) {
@@ -61,6 +83,25 @@ function formatInline(text) {
     break;
   }
 
+  return parts.length === 1 ? parts[0] : <>{parts}</>;
+}
+
+function formatBold(text) {
+  const parts = [];
+  let remaining = text;
+  let key = 0;
+  while (remaining) {
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    if (boldMatch) {
+      const idx = remaining.indexOf(boldMatch[0]);
+      if (idx > 0) parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>);
+      parts.push(<strong key={key++} className="font-semibold">{boldMatch[1]}</strong>);
+      remaining = remaining.slice(idx + boldMatch[0].length);
+      continue;
+    }
+    parts.push(<span key={key++}>{remaining}</span>);
+    break;
+  }
   return parts.length === 1 ? parts[0] : <>{parts}</>;
 }
 
@@ -152,10 +193,10 @@ export default function AiChatWidget() {
     send(`Cho tôi đặt phòng "${name}" tại ${room.hotel_name || "khách sạn này"}`);
   }
 
-  // Kiểm tra tin nhắn cuối có booking hay rooms để hiện quick replies phù hợp
+  // Kiểm tra có booking trong hội thoại (bất kỳ message nào) để hiện upsell buttons liên tục
   const lastBotMsg = [...messages].reverse().find(m => m.role === "bot");
-  const hasBooking = lastBotMsg?.booking;
-  const hasRooms = lastBotMsg?.rooms?.length > 0 && !hasBooking;
+  const hasBookingInConversation = messages.some(m => m.role === "bot" && m.booking);
+  const hasRooms = lastBotMsg?.rooms?.length > 0 && !lastBotMsg?.booking;
 
   return (
     <>
@@ -282,16 +323,16 @@ export default function AiChatWidget() {
               </div>
             ))}
 
-            {/* Quick replies sau khi có booking (upsell) */}
-            {!loading && hasBooking && (
+            {/* Quick replies sau khi có booking (upsell) — hiện liên tục */}
+            {!loading && hasBookingInConversation && (
               <div className="flex flex-wrap gap-1.5 justify-center pt-2">
                 {UPSELL_REPLIES.map((q) => (
                   <button
-                    key={q}
-                    onClick={() => onQuickReply(q)}
-                    className="text-[11px] px-2.5 py-1.5 rounded-full border border-[#febb02]/50 text-[#003580] bg-[#febb02]/10 hover:bg-[#febb02]/30 transition"
+                    key={q.text}
+                    onClick={() => onQuickReply(q.message)}
+                    className="text-[11px] px-2.5 py-1.5 rounded-full border border-[#febb02]/50 text-[#003580] bg-[#febb02]/10 hover:bg-[#febb02]/30 transition font-medium"
                   >
-                    {q}
+                    {q.text}
                   </button>
                 ))}
               </div>

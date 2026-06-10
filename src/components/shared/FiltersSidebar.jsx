@@ -20,10 +20,9 @@ export default function FiltersSidebar({
   filters,
   setFilters,
   options,
-  onApply,
   onReset,
 }) {
-  const { starOptions, ratingOptions, amenityOptions, propertyTypeOptions } = options;
+  const { starOptions, ratingOptions, amenityOptions } = options;
 
   function toggleInArray(key, value) {
     setFilters((prev) => {
@@ -85,7 +84,7 @@ export default function FiltersSidebar({
           </div>
         </div>
 
-        {/* quick presets (giống Booking vibe) */}
+        {/* quick presets */}
         <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
@@ -146,21 +145,6 @@ export default function FiltersSidebar({
         </div>
       </div>
 
-      {/* Property type */}
-      <div className="mt-5">
-        <div className="text-sm font-extrabold text-slate-900">Loại chỗ ở</div>
-        <div className="mt-2 space-y-1">
-          {propertyTypeOptions.map((t) => (
-            <Checkbox
-              key={t}
-              checked={(filters.propertyTypes || []).includes(t)}
-              onChange={() => toggleInArray("propertyTypes", t)}
-              label={t}
-            />
-          ))}
-        </div>
-      </div>
-
       {/* Amenities */}
       <div className="mt-5">
         <div className="text-sm font-extrabold text-slate-900">Tiện ích</div>
@@ -174,18 +158,12 @@ export default function FiltersSidebar({
             />
           ))}
         </div>
-        <div className="text-xs text-slate-500 mt-2">
-          * Lọc theo kiểu “có đủ tiện ích đã chọn”.
-        </div>
       </div>
 
-      {/* Actions */}
-      <div className="mt-5 space-y-2">
-        <Button variant="primary" className="w-full" onClick={onApply}>
-          Áp dụng
-        </Button>
+      {/* Reset */}
+      <div className="mt-5">
         <Button variant="secondary" className="w-full" onClick={onReset}>
-          Đặt lại
+          Đặt lại bộ lọc
         </Button>
       </div>
     </Card>
