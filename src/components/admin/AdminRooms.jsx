@@ -49,7 +49,7 @@ export default function AdminRooms() {
   }
 
   async function onSave() {
-    const data = { ...form, hotel_id: Number(form.hotel_id), price_per_night: Number(form.price_per_night), max_guests: Number(form.max_guests), total_quantity: Number(form.total_quantity) };
+    const data = { ...form, amenities: [], hotel_id: Number(form.hotel_id), price_per_night: Number(form.price_per_night), max_guests: Number(form.max_guests), total_quantity: Number(form.total_quantity) };
     try {
       if (editing) { await adminApi.updateRoom(editing.id, data); toast.success("Đã cập nhật phòng"); }
       else { await adminApi.createRoom(data); toast.success("Đã tạo phòng mới"); }

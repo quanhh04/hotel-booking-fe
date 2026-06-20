@@ -153,7 +153,7 @@ export default function AdminHotels() {
               <th className="py-2">Tên</th>
               <th className="py-2">Địa chỉ</th>
               <th className="py-2 text-right">Rating</th>
-              <th className="py-2 text-right">Giá từ</th>
+              {/* <th className="py-2 text-right">Giá từ</th> */}
               <th className="py-2 text-right">Thao tác</th>
             </tr>
           </thead>
@@ -164,7 +164,7 @@ export default function AdminHotels() {
                 <td className="py-2 font-semibold text-slate-900">{h.name}</td>
                 <td className="py-2 text-slate-600 max-w-xs truncate">{h.address}</td>
                 <td className="py-2 text-right">{h.rating || "-"}</td>
-                <td className="py-2 text-right">{h.price_from ? formatVND(h.price_from) : "-"}</td>
+                {/* <td className="py-2 text-right">{h.price_from ? formatVND(h.price_from) : "-"}</td> */}
                 <td className="py-2 text-right">
                   <div className="flex gap-1 justify-end">
                     <button onClick={() => setImageHotelId(h.id)} className="text-xs text-green-600 hover:underline">🖼️ Ảnh</button>
