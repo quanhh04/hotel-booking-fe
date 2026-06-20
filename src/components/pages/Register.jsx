@@ -50,7 +50,7 @@ export default function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-1"
-                placeholder="VD: Trần Anh Tú"
+                placeholder="VD: Trần Quang Anh"
               />
             </div>
 

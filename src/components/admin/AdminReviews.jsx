@@ -15,10 +15,9 @@ export default function AdminReviews() {
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      // Use hotel list to get all reviews across hotels
       const hotelsRes = await httpClient.get(`${P}/hotels`, { limit: 100 });
       const hotels = hotelsRes.hotels || [];
-      const allReviews = [];
+      const allReviews = [];//tạo mảng review tổng để gom review từ all hotel
       for (const h of hotels.slice(0, 20)) {
         try {
           const res = await httpClient.get(`${P}/reviews/hotel/${h.id}`, { limit: 50 });

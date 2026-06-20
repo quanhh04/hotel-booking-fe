@@ -17,7 +17,7 @@ export default function MyReviews() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false; // tránh update state sau khi component unmount
     async function fetchReviews() {
       setLoading(true); setError(null);
       try { const res = await reviewApi.getMyReviews(); if (!cancelled) setReviews(Array.isArray(res) ? res : res.reviews || []); }

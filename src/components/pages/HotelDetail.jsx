@@ -74,7 +74,7 @@ export default function HotelDetail() {
   };
 
   function scrollToRooms() {
-    const el = document.getElementById("rooms");
+    const el = document.getElementById("rooms"); //tìm phần tử có id tương ứng và gán vào el
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 

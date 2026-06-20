@@ -98,7 +98,7 @@ export default function Booking() {
         check_out: checkOut,
         payment_method: paymentMethod,
       });
-      setSuccessId(booking.id);
+      setSuccessId(booking.id); //Lưu booking id
     } catch (error) {
       toast.error(error.message || "Đã có lỗi xảy ra khi đặt phòng");
     } finally {

@@ -19,32 +19,32 @@ export default function DateInput({ value, onChange, className = "", ...props })
   }
 
   function handleTextChange(e) {
-    let raw = e.target.value.replace(/[^\d]/g, "");
+    let raw = e.target.value.replace(/[^\d]/g, "");//loại bỏ ký tự lạ
     let formatted = "";
     for (let i = 0; i < raw.length && i < 8; i++) {
       if (i === 2 || i === 4) formatted += "/";
       formatted += raw[i];
     }
-    setText(formatted);
+    setText(formatted);//cập nhật state
 
     if (formatted.length === 10) {
       const iso = toISO(formatted);
       if (iso && !isNaN(new Date(iso).getTime())) {
-        onChange({ target: { value: iso } });
+        onChange({ target: { value: iso } });//callback báo cho component cha biết ngày thay đổi
       }
     }
   }
 
-  function handleBlur() {
+  function handleBlur() { //khi mất focus hiển thị lại giá trị chuẩn
     setText(toDisplay(value));
   }
 
   function openPicker() {
-    try { nativeRef.current?.showPicker(); }
-    catch { nativeRef.current?.focus(); }
+    try { nativeRef.current?.showPicker(); }//hiện popup lịch
+    catch { nativeRef.current?.focus(); }//focus vào input date
   }
 
-  function handleNativeChange(e) {
+  function handleNativeChange(e) { //khi chọn từ lịch
     const iso = e.target.value;
     setText(toDisplay(iso));
     onChange({ target: { value: iso } });

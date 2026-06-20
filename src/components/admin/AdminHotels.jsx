@@ -32,11 +32,8 @@ function ImageManager({ hotelId, onClose }) {
     setUploading(true);
     try {
       for (const file of files) {
-        // 1. Upload to Cloudinary
         const url = await uploadImage(file);
-        // 2. Save to settings.images
         const img = await adminApi.createImage(url, file.name, 'hotel');
-        // 3. Map to hotel
         await adminApi.addHotelImage(hotelId, img.id, images.length);
       }
       toast.success(`Đã upload ${files.length} ảnh`);

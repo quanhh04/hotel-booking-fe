@@ -48,7 +48,7 @@ export default function AdminCities() {
     try {
       const url = await uploadImage(file);
       const img = await adminApi.createImage(url, file.name, "city");
-      setThumbPreview(url);
+      setThumbPreview(url);//lưu preview
       setThumbImageId(img.id);
       toast.success("Đã upload ảnh");
     } catch (err) { toast.error(err.message); }
@@ -56,7 +56,7 @@ export default function AdminCities() {
   }
 
   async function onSave() {
-    const data = { ...form };
+    const data = { ...form };//tạo dữ liệu gửi lên be
     if (thumbImageId) data.thumbnail_id = thumbImageId;
     try {
       if (editing) { await adminApi.updateCity(editing.id, data); toast.success("Đã cập nhật"); }

@@ -7,8 +7,8 @@ import { bookingApi } from '../api/bookingApi';
  */
 export function useBookings() {
   const { data, loading, error, refetch } = useFetch(
-    () => bookingApi.getMyBookings(),
-    []
+    () => bookingApi.getMyBookings(),//truyền cho useFetch biết phải gọi API nào
+    []//chỉ gọi API 1 lần khi component mount
   );
 
   const bookings = Array.isArray(data) ? data : data?.bookings || [];

@@ -7,7 +7,7 @@ export function useAiChat() {
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
 
   const latestRequestRef = useRef(0);
-  const mountedRef = useRef(true);
+  const mountedRef = useRef(true);//kiểm tra component còn tồn tại không
   const lastTextRef = useRef('');
 
   const send = useCallback(async (text) => {
@@ -17,7 +17,7 @@ export function useAiChat() {
     const requestId = ++latestRequestRef.current;
 
     const userMsg = { role: 'user', content: text, ts: Date.now() };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);//thêm vào lịch sử
     setLoading(true);
 
     try {
@@ -31,15 +31,15 @@ export function useAiChat() {
         content: res.reply || res.message || 'Xin lỗi, tôi không hiểu.',
         rooms: Array.isArray(res.results) ? res.results : [],
         booking: res.booking || null,
-        intent: res.intent || null,
+        intent: res.intent || null,//lưu intent AI nhận diện vd: "search_room"
         ts: Date.now(),
       };
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [...prev, botMsg]);//bot phản hồi tin nhắn vào messages
     } catch (err) {
       if (requestId !== latestRequestRef.current) return;
       if (!mountedRef.current) return;
 
-      setMessages((prev) => [
+      setMessages((prev) => [ //thêm tin nhắn lỗi
         ...prev,
         {
           role: 'bot',
@@ -59,8 +59,8 @@ export function useAiChat() {
     if (!lastTextRef.current) return;
     setMessages((prev) => {
       const copy = [...prev];
-      if (copy.length > 0 && copy[copy.length - 1].isError) copy.pop();
-      if (copy.length > 0 && copy[copy.length - 1].role === 'user') copy.pop();
+      if (copy.length > 0 && copy[copy.length - 1].isError) copy.pop();//xóa messages lỗi
+      if (copy.length > 0 && copy[copy.length - 1].role === 'user') copy.pop();//xóa messages cuối của user
       return copy;
     });
     setLoading(false);

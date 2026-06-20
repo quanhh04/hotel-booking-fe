@@ -33,15 +33,15 @@ export default function MyBookings() {
       .catch(() => { /* lỗi không quan trọng — bỏ qua */ });
   }
 
-  useEffect(() => { fetchReviews(); }, []);
+  useEffect(() => { fetchReviews(); }, []);//Chạy 1 lần khi mount
 
   function getReviewForBooking(bookingId) {
     return myReviews.find((r) => r.booking_id === bookingId) || null;
   }
 
   function onReviewSuccess() {
-    refetch();
-    fetchReviews();
+    refetch();//reload booking
+    fetchReviews();//reload đánh giá
   }
 
   async function onCancel(id) {

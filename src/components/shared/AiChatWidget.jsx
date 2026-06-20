@@ -20,12 +20,11 @@ const UPSELL_REPLIES = [
   { text: "🗺️ Xem trên Google Maps", message: "Cho tôi link Google Maps đến khách sạn tôi vừa đặt" },
 ];
 
-/** Render markdown nhẹ: **bold**, *italic*, bullet lists */
-function renderMarkdown(text) {
+function renderMarkdown(text) { //Chuyển đổi nội dung văn bản do AI trả về thành giao diện React
   if (!text) return null;
   const lines = text.split("\n");
   return lines.map((line, i) => {
-    // Bullet list: * item hoặc - item
+    // Bullet list: * item hoặc - item    
     const bulletMatch = line.match(/^\s*[\*\-]\s+(.+)/);
     if (bulletMatch) {
       return (
@@ -42,34 +41,32 @@ function renderMarkdown(text) {
   });
 }
 
-/** Format inline: **bold**, *italic*, and [links](url) */
 function formatInline(text) {
-  const parts = [];
-  let remaining = text;
+  const parts = [];//dùng để chứa các phần từ JSX
+  let remaining = text; //lưu phần text chưa xử lý
   let key = 0;
 
   while (remaining) {
-    // Link: [text](url)
     const linkMatch = remaining.match(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/);
     if (linkMatch) {
       const idx = remaining.indexOf(linkMatch[0]);
-      if (idx > 0) parts.push(<span key={key++}>{formatBold(remaining.slice(0, idx))}</span>);
+      if (idx > 0) parts.push(<span key={key++}>{formatBold(remaining.slice(0, idx))}</span>);//lấy phần text trước link
       parts.push(
         <a
           key={key++}
           href={linkMatch[2]}
-          target="_blank"
+          target="_blank"// mở tab mới
           rel="noopener noreferrer"
           className="text-[#0071c2] underline underline-offset-2 hover:text-[#003580] transition"
         >
           {linkMatch[1]}
         </a>
       );
-      remaining = remaining.slice(idx + linkMatch[0].length);
-      continue;
+      remaining = remaining.slice(idx + linkMatch[0].length);//phần sau link
+      continue; //Quay lại đầu vòng lặp (Nếu không có link thì chạy tiếp)
     }
 
-    // Bold: **text**
+    // Xử lý đoạn in đậm dạng ** ** (tìm xem trong chuỗi có không)
     const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
     if (boldMatch) {
       const idx = remaining.indexOf(boldMatch[0]);
@@ -194,7 +191,7 @@ export default function AiChatWidget() {
   }
 
   // Kiểm tra có booking trong hội thoại (bất kỳ message nào) để hiện upsell buttons liên tục
-  const lastBotMsg = [...messages].reverse().find(m => m.role === "bot");
+  const lastBotMsg = [...messages].reverse().find(m => m.role === "bot");//lấy tin nhắn bot mới nhất
   const hasBookingInConversation = messages.some(m => m.role === "bot" && m.booking);
   const hasRooms = lastBotMsg?.rooms?.length > 0 && !lastBotMsg?.booking;
 

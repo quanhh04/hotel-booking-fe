@@ -57,6 +57,7 @@ export default function AdminNearbyServices() {
     setLoading(true);
     try {
       const params = { page, limit: 20 };
+      // Thêm filter
       if (filterHotelId) params.hotel_id = filterHotelId;
       if (filterCategory) params.category = filterCategory;
       const res = await adminApi.getNearbyServices(params);

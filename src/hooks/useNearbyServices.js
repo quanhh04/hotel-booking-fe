@@ -22,7 +22,7 @@ export function useNearbyServices(hotelId) {
       setCategories(res.categories || []);
     } catch (err) {
       setError(err.message || 'Không thể tải dịch vụ');
-      setServices([]);
+      setServices([]);//reset service
     } finally {
       setLoading(false);
     }

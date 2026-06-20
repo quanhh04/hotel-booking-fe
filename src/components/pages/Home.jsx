@@ -46,7 +46,6 @@ export default function Home() {
   const [checkOut, setCheckOut] = useState(toYYYYMMDD(tomorrow));
   const [guests, setGuests]     = useState(2);
 
-  // Tạo query string `?city=...&checkIn=...` rồi điều hướng sang /hotels
   function goToSearch(customCity) {
     const finalCity = (customCity ?? city).trim();
     const params = new URLSearchParams();
@@ -59,9 +58,8 @@ export default function Home() {
 
   function onSubmit(e) {
     e.preventDefault();
-    // Trả phòng < nhận phòng → tự sửa thành đúng nhận phòng (UX nhẹ nhàng)
     if (checkOut && checkIn && checkOut < checkIn) {
-      setCheckOut(checkIn);
+      setCheckOut(checkIn);// Trả phòng < nhận phòng → tự sửa thành đúng  
       return;
     }
     goToSearch();

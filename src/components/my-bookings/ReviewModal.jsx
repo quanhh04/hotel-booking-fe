@@ -1,3 +1,4 @@
+//File được mở khi user đánh giá hoặc cập nhật đánh giá
 import { useEffect, useState } from "react";
 import Button from "../ui/Button";
 import { useToast } from "../../contexts/ToastContext";
@@ -10,13 +11,13 @@ export default function ReviewModal({ open, onClose, booking, existingReview, on
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
 
-  const isEditing = !!existingReview;
+  const isEditing = !!existingReview;//true: sửa review, false: tạo mới review
 
   useEffect(() => {
     if (open) {
       setRating(existingReview?.rating ?? 8);
       setComment(existingReview?.comment ?? "");
-      setErr("");
+      setErr("");//reset lỗi
     }
   }, [open, existingReview]);
 

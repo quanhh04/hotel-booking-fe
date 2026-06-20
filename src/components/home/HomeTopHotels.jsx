@@ -10,7 +10,6 @@ import { formatVND } from "../../utils/format";
 export default function HomeTopHotels() {
   const navigate = useNavigate();
 
-  // Stable filters ref
   const filters = useMemo(() => ({ sort_by: "rating", sort_order: "DESC", limit: 4 }), []);
   const { hotels, loading, error, refetch } = useHotels(filters);
 
@@ -64,7 +63,7 @@ function HotelCard({ hotel: h, onClick }) {
         <Button
           variant="primary"
           className="w-full mt-3"
-          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          onClick={(e) => { e.stopPropagation(); onClick(); }} //nếu không có stopPropagation thì navigate sẽ bị gọi 2 lần
         >
           Xem chi tiết
         </Button>

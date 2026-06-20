@@ -89,7 +89,7 @@ export default function Hotels() {
     setSort("popular");
   }
 
-  function goAllHotels() {
+  function goAllHotels() { // hàm bỏ chế độ deal only
     const next = new URLSearchParams(sp);
     next.delete("deal");
     navigate(`/hotels${next.toString() ? `?${next.toString()}` : ""}`);

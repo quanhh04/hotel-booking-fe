@@ -140,7 +140,6 @@ export default function AdminBookings() {
   useEffect(() => { fetch(); }, [fetch]);
 
   async function viewDetail(b) {
-    // Use the data we already have from the list
     setDetail(b);
   }
 
