@@ -20,7 +20,7 @@ export default function NotificationBell() {
           setUnread(res.unread_count || 0);
         }
       } catch { /* lỗi không quan trọng — bỏ qua */ }
-    }
+    } 
 
     fetchNotifs();
     const timer = setInterval(fetchNotifs, 30000);

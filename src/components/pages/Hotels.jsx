@@ -37,7 +37,6 @@ export default function Hotels() {
 
   const [sort, setSort] = useState("popular");
 
-  // Build API params from filters + sort
   const apiParams = useMemo(() => {
     const params = {};
     if (filters.city?.trim()) params.keyword = filters.city.trim();
